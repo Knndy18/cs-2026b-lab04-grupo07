@@ -51,7 +51,8 @@ El alcance del MVP cubre catalogo, productos, pedidos, pagos referenciados, noti
 - [E1: Drivers, requisitos y escenarios de calidad](docs/architecture/drivers.md)
 - [E4: Directorio de decisiones arquitectonicas](docs/architecture/adr/)
 - E3, E5 y E6: diagramas como codigo y despliegue seran integrados por el responsable de diagramacion.
-- E2 y E7: matriz de decision y bitacora de IA seran integradas por el responsable de alternativas y verificacion.
+- [E2: Matriz de decision](docs/architecture/matriz-decision.md)
+- [E7: Bitácora de uso de IA](docs/architecture/bitacora-ia.md)
 
 Los drivers `RF`, `QA` y `R` se citan dentro de los ADR. QA-01 verifica la publicacion de productos; QA-02 verifica la persistencia ante fallas de WhatsApp; QA-03 verifica el rendimiento; QA-04 verifica la incorporacion de un nuevo adaptador; y QA-05 verifica la autorizacion por rol y puesto.
 
