@@ -5,7 +5,7 @@
 - **B. Monolito modular:** Un solo despliegue dividido internamente en módulos explícitos (Catalogo, Pedidos, Pagos, Notificaciones y Entregas) con interfaces públicas estrictas. Mantiene la simplicidad operativa de desplegar en un solo VPS de bajo costo (R-03) al tiempo que garantiza el aislamiento de dominio necesario para evolucionar componentes sin afectar al resto (QA-04).
 - **C. Microservicios:** Arquitectura distribuida donde cada dominio opera como un servicio desplegable independientemente mediante comunicación de red. Ofrece un alto aislamiento y escalado granular, pero introduce transacciones distribuidas, alta latencia y una complejidad operativa inviable para un equipo reducido en un plazo de 1 mes (R-01, R-02).
 
-## Criterios y pesos (deben sumar 100 %)
+## Criterios y pesos
 | Criterio | Peso | Justificación (driver relacionado) |
 |---|---|---|
 | Tiempo de entrega y viabilidad del equipo | 25 % | R-01 y R-02: El MVP debe salir a producción en 1 mes desarrollado por un equipo de hasta 3 developers. |
