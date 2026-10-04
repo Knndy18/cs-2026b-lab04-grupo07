@@ -35,7 +35,40 @@ El alcance del MVP cubre catalogo, productos, pedidos, pagos referenciados, noti
 
 ## Arquitectura elegida
 
-```mermaid
+```
+flowchart TB
+    CL["Cliente"]
+    CO["Comerciante"]
+    RE["Repartidor"]
+    AD["Administrador"]
+
+    subgraph APP["San Camilo en Línea - Monolito Modular"]
+        API["API REST + PWA"]
+        M1["Catálogo"]
+        M2["Pedidos"]
+        M3["Pagos"]
+        M4["Entregas"]
+        M5["Notificaciones"]
+        INF["Repositorios y Adaptadores"]
+    end
+
+    DB[("Base de Datos PostgreSQL")]
+    YP["Proveedor de Pago (Yape)"]
+    WA["API de WhatsApp"]
+
+    CL & CO & RE & AD --> API
+    API --> M1 & M2 & M3 & M4 & M5
+    M1 & M2 & M3 & M4 & M5 --> INF
+    INF --> DB
+    INF --> YP
+    INF --> WA
+
+    classDef mod fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef ext fill:#F2F2F2,stroke:#7F7F7F,color:#000,stroke-dasharray: 4 3
+    classDef usr fill:#FDEDEC,stroke:#C8310E,color:#000
+    class M1,M2,M3,M4,M5 mod
+    class YP,WA ext
+    class CL,CO,RE,AD usr
 
 
 ```
@@ -77,9 +110,9 @@ La IA ayudo a proponer alternativas y a convertir las necesidades del mercado en
 |---|---|---|
 | E1: drivers y escenarios | Kennedy | Documentado |
 | E2: alternativas y matriz | Diego | Culminado |
-| E3: arquitectura Mermaid | Nagin | Pendiente de integracion |
+| E3: arquitectura Mermaid | Nagin | Culminado |
 | E4: ADR 001, 002 y 003 | Kennedy | Documentado |
-| E5: alternativa PlantUML | Nagin | Pendiente de integracion |
-| E6: despliegue | Nagin | Pendiente de integracion |
+| E5: alternativa PlantUML | Nagin | Culminado |
+| E6: despliegue | Nagin | Culminado |
 | E7: bitacora de IA | Diego | Documentado |
 | E8: README y revision cruzada | Equipo | En consolidacion |
