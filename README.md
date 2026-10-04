@@ -35,7 +35,7 @@ El alcance del MVP cubre catalogo, productos, pedidos, pagos referenciados, noti
 
 ## Arquitectura elegida
 
-``` mermaid
+```mermaid
 flowchart TB
     CL["Cliente"]
     CO["Comerciante"]
