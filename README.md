@@ -75,10 +75,10 @@ La IA ayudo a proponer alternativas y a convertir las necesidades del mercado en
 | Entregable | Responsable | Estado |
 |---|---|---|
 | E1: drivers y escenarios | Kennedy | Documentado |
-| E2: alternativas y matriz | Diego | Pendiente de integracion |
+| E2: alternativas y matriz | Diego | Culminado |
 | E3: arquitectura Mermaid | Nagin | Pendiente de integracion |
 | E4: ADR 001, 002 y 003 | Kennedy | Documentado |
 | E5: alternativa PlantUML | Nagin | Pendiente de integracion |
 | E6: despliegue | Nagin | Pendiente de integracion |
-| E7: bitacora de IA | Diego | Pendiente de integracion |
+| E7: bitacora de IA | Diego | Documentado |
 | E8: README y revision cruzada | Equipo | En consolidacion |
