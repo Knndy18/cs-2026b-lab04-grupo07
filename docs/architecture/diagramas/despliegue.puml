@@ -1,0 +1,45 @@
+@startuml
+skinparam dpi 220
+skinparam componentStyle rectangle
+title San Camilo en Línea - Vista de Despliegue (PlantUML)
+
+node "Dispositivos de Usuario" {
+  [Celular (PWA)\nComerciante/Repartidor] as Movil
+  [Navegador\nCliente/Admin] as Web
+}
+
+node "Servidor en la Nube (VPS)" {
+  node "Proxy Inverso" {
+    [Nginx (HTTPS)] as Nginx
+  }
+  
+  node "Monolito Modular (Docker)" {
+    [Django API] as API
+    [Celery Workers] as Celery
+    database "Redis (Caché/Cola)" as Redis
+  }
+  
+  database "Base de Datos" {
+    [PostgreSQL] as PG
+  }
+}
+
+cloud "Servicios Externos" {
+  [Pasarela Yape] as Yape
+  [WhatsApp API] as WA
+}
+
+Movil --> Nginx : HTTPS
+Web --> Nginx : HTTPS
+Nginx --> API : Peticiones web
+API --> PG : Lectura/Escritura
+API ..> Redis : Encola notificaciones
+Redis ..> Celery : Consume tareas
+Celery ..> WA : Envía mensaje (asíncrono)
+API ..> Yape : Confirma pago
+
+note bottom of Nginx
+  Nota (E6): Diagrama de despliegue generado en PlantUML
+  como ruta alternativa debido a incompatibilidad de entorno local con Graphviz/Python.
+end note
+@enduml

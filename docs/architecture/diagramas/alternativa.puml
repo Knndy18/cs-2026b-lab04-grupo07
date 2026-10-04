@@ -1,0 +1,49 @@
+@startuml
+skinparam dpi 220
+skinparam componentStyle rectangle
+title Alternativa Descartada: San Camilo en Línea con Microservicios
+
+actor "Cliente / Comerciante / Repartidor" as U
+node "API Gateway" as GW
+
+package "Microservicios (Despliegues Independientes)" {
+  [Catálogo] as C
+  [Pedidos] as P
+  [Pagos] as PA
+  [Entregas] as E
+  [Notificaciones] as N
+}
+
+queue "Broker de Eventos" as MQ
+database "BD Catálogo" as DB1
+database "BD Pedidos" as DB2
+database "BD Pagos" as DB3
+database "BD Entregas" as DB4
+cloud "Yape" as Y
+cloud "WhatsApp API" as W
+
+U --> GW
+GW --> C
+GW --> P
+GW --> E
+
+C --> DB1
+P --> DB2
+PA --> DB3
+E --> DB4
+
+P ..> MQ : Publica
+MQ ..> PA
+MQ ..> E
+MQ ..> N
+
+PA --> Y
+N --> W
+
+note bottom of MQ
+  **Motivo de rechazo (Matriz de decisión):**
+  Aunque favorece la escalabilidad independiente, exige
+  múltiples despliegues y bases de datos. Es inviable para
+  el plazo de 1 mes (R-01) y nuestro equipo de 3 desarrolladores.
+end note
+@enduml
