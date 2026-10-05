@@ -2,7 +2,7 @@
 
 Construccion de Software - EPIS UNSA - 2026-B - Grupo 07
 
-## Resumen ejecutivo
+## Resumen 
 
 San Camilo en Linea es una propuesta de plataforma web progresiva para conectar a clientes con los puestos del Mercado San Camilo. El MVP permitira consultar productos por puesto, armar pedidos multi-puesto, elegir recojo o delivery, registrar pagos con Yape y enviar confirmaciones por WhatsApp. La solucion esta pensada para un equipo academico de hasta tres estudiantes, un plazo de un mes y un presupuesto reducido.
 
@@ -12,9 +12,9 @@ La prioridad de arquitectura es la capacidad de interaccion del comerciante: una
 
 | Nombre | Rol en el laboratorio |
 |---|---|
-| Kennedy | Integrante 1: requisitos, reglas, ADR y README |
-| Diego | Integrante 2: alternativas, matriz y decision arquitectonica |
-| Nagin | Integrante 3: diagramas y vista de despliegue |
+| Pari Charrez Dean Diego | Integrante 2: alternativas, matriz y decision arquitectonica |
+| Carfer Carpio Nagin Jazmin | Integrante 3: diagramas y vista de despliegue |
+| Chirinos Rojas Kennedy | Integrante 1: requisitos, reglas, ADR y README |
 
 ## Caso
 
@@ -82,12 +82,25 @@ flowchart TB
 ## Trazabilidad y entregables
 
 - [E1: Drivers, requisitos y escenarios de calidad](docs/architecture/drivers.md)
+- [E2: Matriz de decisión](docs/architecture/matriz-decision.md)
+- [E3: Código Mermaid de la arquitectura](docs/architecture/diagramas/arquitectura.mmd)
 - [E4: Directorio de decisiones arquitectonicas](docs/architecture/adr/)
-- E3, E5 y E6: diagramas como codigo y despliegue seran integrados por el responsable de diagramacion.
-- [E2: Matriz de decision](docs/architecture/matriz-decision.md)
+- [E5: Alternativa descartada en PlantUML](docs/architecture/diagramas/alternativa.puml)
+- [E6: Vista de despliegue en PlantUML](docs/architecture/diagramas/despliegue.puml)
 - [E7: Bitácora de uso de IA](docs/architecture/bitacora-ia.md)
 
+E6 se documentó mediante PlantUML como alternativa de despliegue, debido a la incompatibilidad del entorno local con Graphviz y Python Diagrams. La decisión y el código fuente del diagrama quedan versionados en el repositorio.
+
 Los drivers `RF`, `QA` y `R` se citan dentro de los ADR. QA-01 verifica la publicacion de productos; QA-02 verifica la persistencia ante fallas de WhatsApp; QA-03 verifica el rendimiento; QA-04 verifica la incorporacion de un nuevo adaptador; y QA-05 verifica la autorizacion por rol y puesto.
+
+## Diagramas e imagenes generadas
+
+| Entregable | Fuente | Imagen |
+|---|---|---|
+| Arquitectura elegida | [arquitectura.mmd](docs/architecture/diagramas/arquitectura.mmd) | [San Camilo API REST](docs/architecture/diagramas/img/San%20Camilo%20API%20REST-2026-10-04-030059.png) |
+| Alternativa descartada | [alternativa.puml](docs/architecture/diagramas/alternativa.puml) | [Alternativa](docs/architecture/diagramas/img/Alternativa.png) |
+| Vista de despliegue | [despliegue.puml](docs/architecture/diagramas/despliegue.puml) | [Despliegue](docs/architecture/diagramas/img/fig6.png) |
+| Diagrama Mermaid embebido | [README.md](README.md#arquitectura-elegida) | Incluido en esta portada |
 
 ## Criterios de calidad
 
@@ -108,11 +121,11 @@ La IA ayudo a proponer alternativas y a convertir las necesidades del mercado en
 
 | Entregable | Responsable | Estado |
 |---|---|---|
-| E1: drivers y escenarios | Kennedy | Documentado |
-| E2: alternativas y matriz | Diego | Culminado |
-| E3: arquitectura Mermaid | Nagin | Culminado |
-| E4: ADR 001, 002 y 003 | Kennedy | Documentado |
-| E5: alternativa PlantUML | Nagin | Culminado |
-| E6: despliegue | Nagin | Culminado |
-| E7: bitacora de IA | Diego | Documentado |
-| E8: README y revision cruzada | Equipo | consolidado |
+| E1: drivers y escenarios | Kennedy | Completado |
+| E2: alternativas y matriz | Diego | Completado |
+| E3: arquitectura Mermaid | Nagin | Completado |
+| E4: ADR 001, 002 y 003 | Kennedy | Completado |
+| E5: alternativa PlantUML | Nagin | Completado |
+| E6: despliegue | Nagin | Completado |
+| E7: bitacora de IA | Diego | Completado |
+| E8: README y revision cruzada | Equipo | Completado |
