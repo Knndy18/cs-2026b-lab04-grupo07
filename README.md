@@ -115,4 +115,4 @@ La IA ayudo a proponer alternativas y a convertir las necesidades del mercado en
 | E5: alternativa PlantUML | Nagin | Culminado |
 | E6: despliegue | Nagin | Culminado |
 | E7: bitacora de IA | Diego | Documentado |
-| E8: README y revision cruzada | Equipo | En consolidacion |
+| E8: README y revision cruzada | Equipo | consolidado |
