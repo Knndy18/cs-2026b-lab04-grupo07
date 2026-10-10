@@ -1,0 +1,114 @@
+@startuml clases
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam class BackgroundColor #EEF2F8
+skinparam classBorderColor #1A3A5C
+
+title San Camilo en Línea - Módulos Pedidos, Catálogo y Pagos (Diseño)
+
+class Cliente {
+  - id: UUID
+  - nombre: String
+  - celular: String
+  - direccionDelivery: String
+}
+
+class Puesto {
+  - id: UUID
+  - numeroPuesto: String
+  - nombreComerciante: String
+  - celularWhatsApp: String
+}
+
+class Producto {
+  - id: UUID
+  - nombre: String
+  - precioUnitario: Decimal
+  - stockDisponible: int
+  + reservarStock(cantidad: int): void
+  + liberarStock(cantidad: int): void
+}
+
+class PedidoGlobal {
+  - id: UUID
+  - fechaCreacion: DateTime
+  - montoTotal: Decimal
+  + calcularMontoTotal(): Decimal
+  + confirmar(): void
+  + cancelar(motivo: String): void
+}
+
+class PedidoPuesto {
+  - id: UUID
+  - subtotal: Decimal
+  - estado: EstadoPedidoPuesto
+  + agregarItem(producto: Producto, cantidad: int): void
+  + registrarPago(pago: Pago): void
+  + cambiarEstado(nuevoEstado: EstadoPedidoPuesto): void
+}
+
+class ItemPedido {
+  - cantidad: int
+  - precioUnitario: Decimal
+  + calcularSubtotal(): Decimal
+}
+
+enum EstadoPedidoPuesto {
+  BORRADOR
+  PAGO_PENDIENTE
+  PAGADO
+  EN_PREPARACION
+  LISTO
+  RECOGIDO
+  ENTREGADO
+  RECHAZADO
+}
+
+class Pago {
+  - id: UUID
+  - monto: Decimal
+  - codigoReferenciaYape: String
+  - aprobado: boolean
+}
+
+interface PasarelaPago <<puerto>> {
+  + verificarPago(monto: Decimal, referencia: String): Pago
+}
+
+class YapeAdapter <<adaptador>> {
+  + verificarPago(monto: Decimal, referencia: String): Pago
+}
+
+class ServicioPedidos <<servicio>> {
+  + crearPedidoMultiPuesto(clienteId: UUID, items: List): PedidoGlobal
+  + procesarPagoYape(pedidoId: UUID, referencia: String): boolean
+}
+
+interface RepositorioPedidos <<puerto>> {
+  + guardar(pedido: PedidoGlobal): void
+  + buscarPorId(id: UUID): PedidoGlobal
+}
+
+interface NotificadorWhatsApp <<puerto>> {
+  + notificarNuevoPedidoComerciante(puesto: Puesto, pedido: PedidoPuesto): void
+}
+
+' Relaciones con multiplicidades estrictas
+Cliente "1" -- "0..*" PedidoGlobal : realiza >
+PedidoGlobal "1" *-- "1..*" PedidoPuesto : contiene >
+Puesto "1" -- "0..*" PedidoPuesto : atiende >
+PedidoPuesto "1" *-- "1..*" ItemPedido : contiene >
+ItemPedido "0..*" --> "1" Producto : referencia >
+Puesto "1" -- "0..*" Producto : ofrece >
+
+PedidoGlobal "1" -- "0..1" Pago : asociado_a >
+PedidoPuesto --> EstadoPedidoPuesto
+
+PasarelaPago <|.. YapeAdapter : realiza >
+ServicioPedidos ..> PedidoGlobal
+ServicioPedidos ..> RepositorioPedidos
+ServicioPedidos ..> PasarelaPago
+ServicioPedidos ..> NotificadorWhatsApp
+
+@enduml
