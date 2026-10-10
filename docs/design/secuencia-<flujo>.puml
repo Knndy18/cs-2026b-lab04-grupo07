@@ -1,0 +1,65 @@
+@startuml secuencia-pedido-multipuesto
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+autonumber
+
+actor Cliente
+participant "PWA UI" as UI
+participant "PedidoController" as C
+participant "ServicioPedidos" as S
+participant "PedidoGlobal" as PG
+participant "PedidoPuesto" as PP
+participant "Producto" as Prod
+participant "PasarelaPago\n(YapeAdapter)" as Pasarela
+participant "RepositorioPedidos" as Repo
+participant "NotificadorWhatsApp" as Notif
+
+Cliente -> UI : Confirmar pedido multi-puesto y pagar con Yape
+UI -> C : POST /pedidos/confirmar (referenciaYape)
+C -> S : procesarPagoYape(pedidoId, referenciaYape)
+S -> Repo : buscarPorId(pedidoId)
+Repo --> S : pedidoGlobal
+
+S -> PG : calcularMontoTotal()
+PG --> S : montoTotal
+
+S -> Pasarela : verificarPago(montoTotal, referenciaYape)
+Pasarela --> S : pago
+
+alt Pago Aprobado y Stock Disponible
+    S -> PG : confirmar()
+    
+    loop por cada PedidoPuesto en PedidoGlobal
+        loop por cada ItemPedido en PedidoPuesto
+            S -> Prod : reservarStock(cantidad)
+        end
+        S -> PP : cambiarEstado(PAGADO)
+        S -> PP : registrarPago(pago)
+    end
+    
+    S -> Repo : guardar(pedidoGlobal)
+    
+    loop por cada PedidoPuesto en PedidoGlobal
+        S ->> Notif : notificarNuevoPedidoComerciante(puesto, pedidoPuesto)
+        note right of Notif: Mensaje Asíncrono (No bloquea la respuesta HTTP)
+    end
+    
+    S --> C : resultadoExitoso
+    C --> UI : 200 OK (Pedido confirmado y pagado)
+    UI --> Cliente : Muestra resumen del pedido por puesto
+
+else Pago Rechazado o Referencia Inválida
+    S -> PG : cancelar("Pago Yape invalido o no verificado")
+    
+    loop por cada ItemPedido
+        S -> Prod : liberarStock(cantidad)
+    end
+    
+    S -> Repo : guardar(pedidoGlobal)
+    S --> C : errorPago
+    C --> UI : 402 Pago Rechazado
+    UI --> Cliente : Muestra alerta de error en pago Yape
+end
+
+@enduml
