@@ -1,0 +1,75 @@
+@startuml classes_pedidos
+set namespaceSeparator none
+class "Cliente" as pedidos.models.Cliente {
+  celular : str
+  direccion_delivery : Optional[str]
+  id : UUID
+  nombre : str
+}
+class "EstadoPedidoPuesto" as pedidos.models.EstadoPedidoPuesto {
+  name
+}
+class "ItemPedido" as pedidos.models.ItemPedido {
+  cantidad : int
+  precio_unitario : Decimal
+  producto
+  calcular_subtotal() -> Decimal
+}
+class "NotificadorWhatsApp" as pedidos.models.NotificadorWhatsApp {
+  notificar_nuevo_pedido_comerciante(puesto: Puesto, pedido_puesto: PedidoPuesto) -> None
+}
+class "Pago" as pedidos.models.Pago {
+  aprobado : bool
+  codigo_referencia_yape : str
+  id : UUID
+  monto : Decimal
+}
+class "PasarelaPago" as pedidos.models.PasarelaPago {
+  verificar_pago(monto: Decimal, referencia: str) -> Pago
+}
+class "PedidoGlobal" as pedidos.models.PedidoGlobal {
+  cliente
+  fecha_creacion : datetime
+  id : UUID
+  pago : Optional[Pago]
+  pedidos_puesto : List[PedidoPuesto]
+  calcular_monto_total() -> Decimal
+  cancelar(motivo: str) -> None
+  confirmar() -> None
+}
+class "PedidoPuesto" as pedidos.models.PedidoPuesto {
+  estado
+  id : UUID
+  items : List[ItemPedido]
+  puesto
+  agregar_item(producto: Producto, cantidad: int) -> None
+  calcular_subtotal() -> Decimal
+  cambiar_estado(nuevo_estado: EstadoPedidoPuesto) -> None
+}
+class "Producto" as pedidos.models.Producto {
+  id : UUID
+  nombre : str
+  precio_unitario : Decimal
+  stock_disponible : int
+  liberar_stock(cantidad: int) -> None
+  reservar_stock(cantidad: int) -> None
+}
+class "Puesto" as pedidos.models.Puesto {
+  celular_whatsapp : str
+  id : UUID
+  nombre_comerciante : str
+  numero_puesto : str
+}
+class "RepositorioPedidos" as pedidos.models.RepositorioPedidos {
+  buscar_por_id(pedido_id: uuid.UUID) -> Optional[PedidoGlobal]
+  guardar(pedido: PedidoGlobal) -> None
+}
+class "ServicioPedidos" as pedidos.models.ServicioPedidos {
+  crear_pedido_multi_puesto(cliente: Cliente, items_por_puesto: List[tuple[Puesto, List[tuple[Producto, int]]]]) -> PedidoGlobal
+  procesar_pago_yape(pedido: PedidoGlobal, referencia: str) -> bool
+}
+pedidos.models.PedidoGlobal --> pedidos.models.Cliente : cliente
+pedidos.models.PedidoPuesto --> pedidos.models.EstadoPedidoPuesto : estado
+pedidos.models.ItemPedido --> pedidos.models.Producto : producto
+pedidos.models.PedidoPuesto --> pedidos.models.Puesto : puesto
+@enduml
