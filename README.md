@@ -161,7 +161,7 @@ Los modulos de aplicacion exponen **puertos** (interfaces `Protocol`); la capa d
 | E1: Historia de usuario y diagrama de clases | Diego | Completado |
 | E2: Diagrama de secuencia | Diego | Completado |
 | E3: Maquina de estados (Mermaid) | Nagin | Completado |
-| E4: Diagrama de actividades | Nagin | En proceso |
+| E4: Diagrama de actividades | Nagin | Completado |
 | E5: Diagrama de paquetes | Kennedy | Completado |
 | E6: Round-trip con IA (codigo y diferencias) | Kennedy | Completado |
 | E7: Consistencia y bitacora de IA | Equipo | Completado |
