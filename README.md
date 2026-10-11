@@ -117,10 +117,38 @@ Los drivers `RF`, `QA` y `R` se citan dentro de los ADR. QA-01 verifica la publi
 
 La IA ayudo a proponer alternativas y a convertir las necesidades del mercado en requisitos y escenarios medibles. Tambien sirvio para revisar la estructura de los ADR y detectar consecuencias que podian quedar fuera. El equipo no tomo sus sugerencias como decisiones automaticas, porque una propuesta puede ignorar el presupuesto, el plazo o la conectividad real. Verificamos que Yape y WhatsApp requieren integraciones disponibles y no asumimos capacidades no confirmadas. La arquitectura elegida prioriza una solucion operable por un equipo pequeno y deja documentados sus riesgos. Las afirmaciones tecnicas deben contrastarse con documentacion oficial, pruebas y restricciones del caso. La bitacora registra las propuestas aceptadas, corregidas y rechazadas.
 
+## Diseno UML
+
+### Entregables de diseno
+
+| Entregable | Archivo(s) | Responsable |
+|---|---|---|
+| E1 - Historia y Diagrama de Clases | [historia.md](docs/design/historia.md) / [clases.puml](docs/design/clases.puml) | Diego (Integrante 1) |
+| E2 - Diagrama de Secuencia | [secuencia-flujo.puml](docs/design/secuencia-flujo.puml) | Diego (Integrante 1) |
+| E3 - Maquina de Estados | [estados-pedido.mmd](docs/design/estados-pedido.mmd) | Nagin (Integrante 2) |
+| E4 - Diagrama de Actividades | [actividades-preparacion.puml](docs/design/actividades-preparacion.puml) | Nagin (Integrante 2) |
+| E5 - Diagrama de Paquetes | [paquetes.puml](docs/design/paquetes.puml) | Kennedy (Integrante 3) |
+| E6 - Round-trip con IA | [src/pedidos/models.py](src/pedidos/models.py) / [classes_pedidos.puml](docs/design/classes_pedidos.puml) / [round-trip.md](docs/design/round-trip.md) | Kennedy (Integrante 3) |
+| E7 - Consistencia y Bitacora | [consistencia.md](docs/design/consistencia.md) / [bitacora-ia.md](docs/design/bitacora-ia.md) | Equipo |
+| E8 - Entrega | [README.md](README.md) / GitHub PR / tag `v0.5-diseno` | Equipo |
+
+### Diagrama de paquetes (vista rapida)
+
+El monolito modular (ADR-001) se organiza en tres capas sin dependencias ciclicas:
+
+```
+api -> {catalogo, pedidos, pagos, notificaciones, entregas} -> infraestructura
+```
+
+Los modulos de aplicacion exponen **puertos** (interfaces `Protocol`); la capa de infraestructura provee los **adaptadores** concretos (PostgreSQL, Yape, WhatsApp). Ningun modulo de dominio conoce la infraestructura directamente.
+
+---
+
 ## Estado del trabajo
 
 | Entregable | Responsable | Estado |
 |---|---|---|
+| **Laboratorio 04** | | |
 | E1: drivers y escenarios | Kennedy | Completado |
 | E2: alternativas y matriz | Diego | Completado |
 | E3: arquitectura Mermaid | Nagin | Completado |
@@ -129,3 +157,14 @@ La IA ayudo a proponer alternativas y a convertir las necesidades del mercado en
 | E6: despliegue | Nagin | Completado |
 | E7: bitacora de IA | Diego | Completado |
 | E8: README y revision cruzada | Equipo | Completado |
+| **Laboratorio 05** | | |
+| E1: Historia de usuario y diagrama de clases | Diego | Completado |
+| E2: Diagrama de secuencia | Diego | Completado |
+| E3: Maquina de estados (Mermaid) | Nagin | Completado |
+| E4: Diagrama de actividades | Nagin | Completado |
+| E5: Diagrama de paquetes | Kennedy | Completado |
+| E6: Round-trip con IA (codigo y diferencias) | Kennedy | Completado |
+| E7: Consistencia y bitacora de IA | Equipo | Completado |
+| E8: Revision cruzada, README y tag final | Equipo | En proceso |
+
+
