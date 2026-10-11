@@ -1,0 +1,17 @@
+stateDiagram-v2
+    [*] --> BORRADOR : agregarItem()
+    BORRADOR --> PAGO_PENDIENTE : cambiarEstado() [pedido global confirmado]
+    PAGO_PENDIENTE --> PAGADO : registrarPago() [pago aprobado]
+    PAGO_PENDIENTE --> RECHAZADO : cambiarEstado() [pago fallido o expirado]
+    PAGADO --> EN_PREPARACION : cambiarEstado() [comerciante acepta]
+    EN_PREPARACION --> LISTO : cambiarEstado() [producto empaquetado]
+    LISTO --> RECOGIDO : cambiarEstado() [repartidor recoge de los puestos]
+    RECOGIDO --> ENTREGADO : cambiarEstado() [repartidor entrega al cliente]
+    
+    ENTREGADO --> [*]
+    RECHAZADO --> [*]
+
+    note right of EN_PREPARACION
+      Notificar por WhatsApp
+      al comerciante.
+    end note
