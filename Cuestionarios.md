@@ -101,8 +101,17 @@ Al solicitar las alternativas de arquitectura backend mediante el Prompt 1, la I
 ---
 
 ## 1. ¿Qué diferencia hay entre el diseño arquitectónico del Laboratorio 04 y el diseño detallado de este laboratorio?  Dé un ejemplo de su caso. 
+
+El diseño arquitectónico del laboratorio anterior organiza el sistema a gran escala dividiéndolo en módulos principales. Por otro lado el diseño detallado de este laboratorio define el interior de esos módulos estableciendo las clases y su comportamiento específico.
+
 ## 2. ¿Cuándo usaría composición y cuándo agregación? Justifique con dos relaciones de su diagrama de clases.
+
+La composición se usa cuando una parte depende totalmente del elemento contenedor y desaparece si este es eliminado. La agregación se usa cuando las partes agrupadas son independientes y pueden existir por sí solas aunque el contenedor principal deje de existir.
+
 ## 3. ¿Por qué en el diagrama de clases se modela la pasarela de pagos (o el servicio externo de su caso) como interfaz  y no como superclase? Relaciónelo con el ADR-001. 
+
+Se modela como una interfaz para respetar la arquitectura de puertos y adaptadores definida previamente. Esto permite conectar el sistema con servicios externos de forma flexible sin atar el código interno a una tecnología específica mediante herencia.
+
 ## 4. Explique la regla C1 y muestre un mensaje de su diagrama de secuencia que la incumplía antes de corregirlo.
 ## 5. ¿Cómo se derivan casos de prueba a partir de un diagrama de máquina de estados? Indique cuántas pruebas  mínimas requiere su diagrama. 
 ## 6. ¿Qué información del diagrama de diseño se perdió en la ingeniería inversa (E6) y por qué? 
