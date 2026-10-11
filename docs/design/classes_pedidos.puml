@@ -1,75 +1,123 @@
 @startuml classes_pedidos
+top to bottom direction
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam classAttributeIconSize 0
+skinparam nodesep 40
+skinparam ranksep 45
+
+skinparam class {
+  BackgroundColor #F8FAFC
+  BorderColor #1E293B
+  ArrowColor #0F172A
+}
+
 set namespaceSeparator none
-class "Cliente" as pedidos.models.Cliente {
-  celular : str
-  direccion_delivery : Optional[str]
-  id : UUID
-  nombre : str
+
+package "Entidades del Dominio" {
+  class "Cliente" as pedidos.models.Cliente {
+    id : UUID
+    nombre : str
+    celular : str
+    direccion_delivery : Optional[str]
+  }
+
+  class "Puesto" as pedidos.models.Puesto {
+    id : UUID
+    numero_puesto : str
+    nombre_comerciante : str
+    celular_whatsapp : str
+  }
+
+  class "Producto" as pedidos.models.Producto {
+    id : UUID
+    nombre : str
+    precio_unitario : Decimal
+    stock_disponible : int
+    liberar_stock(cantidad: int) -> None
+    reservar_stock(cantidad: int) -> None
+  }
+
+  class "ItemPedido" as pedidos.models.ItemPedido {
+    producto : Producto
+    cantidad : int
+    precio_unitario : Decimal
+    calcular_subtotal() -> Decimal
+  }
+
+  enum "EstadoPedidoPuesto" as pedidos.models.EstadoPedidoPuesto {
+    RECIBIDO
+    LISTO
+    RECOGIDO
+    ENTREGADO
+    RECHAZADO
+  }
+
+  class "PedidoPuesto" as pedidos.models.PedidoPuesto {
+    id : UUID
+    puesto : Puesto
+    estado : EstadoPedidoPuesto
+    items : List[ItemPedido]
+    agregar_item(producto: Producto, cantidad: int) -> None
+    calcular_subtotal() -> Decimal
+    cambiar_estado(nuevo_estado: EstadoPedidoPuesto) -> None
+  }
+
+  class "Pago" as pedidos.models.Pago {
+    id : UUID
+    monto : Decimal
+    codigo_referencia_yape : str
+    aprobado : bool
+  }
+
+  class "PedidoGlobal" as pedidos.models.PedidoGlobal {
+    id : UUID
+    cliente : Cliente
+    fecha_creacion : datetime
+    pedidos_puesto : List[PedidoPuesto]
+    pago : Optional[Pago]
+    calcular_monto_total() -> Decimal
+    confirmar() -> None
+    cancelar(motivo: str) -> None
+  }
 }
-class "EstadoPedidoPuesto" as pedidos.models.EstadoPedidoPuesto {
-  name
+
+package "Puertos (Interfaces)" {
+  interface "PasarelaPago" as pedidos.models.PasarelaPago {
+    verificar_pago(monto: Decimal, referencia: str) -> Pago
+  }
+
+  interface "RepositorioPedidos" as pedidos.models.RepositorioPedidos {
+    guardar(pedido: PedidoGlobal) -> None
+    buscar_por_id(pedido_id: uuid.UUID) -> Optional[PedidoGlobal]
+  }
+
+  interface "NotificadorWhatsApp" as pedidos.models.NotificadorWhatsApp {
+    notificar_nuevo_pedido_comerciante(puesto: Puesto, pedido_puesto: PedidoPuesto) -> None
+  }
 }
-class "ItemPedido" as pedidos.models.ItemPedido {
-  cantidad : int
-  precio_unitario : Decimal
-  producto
-  calcular_subtotal() -> Decimal
+
+package "Servicios de Aplicacion" {
+  class "ServicioPedidos" as pedidos.models.ServicioPedidos {
+    crear_pedido_multi_puesto(cliente: Cliente, items_por_puesto: List) -> PedidoGlobal
+    procesar_pago_yape(pedido: PedidoGlobal, referencia: str) -> bool
+  }
 }
-class "NotificadorWhatsApp" as pedidos.models.NotificadorWhatsApp {
-  notificar_nuevo_pedido_comerciante(puesto: Puesto, pedido_puesto: PedidoPuesto) -> None
-}
-class "Pago" as pedidos.models.Pago {
-  aprobado : bool
-  codigo_referencia_yape : str
-  id : UUID
-  monto : Decimal
-}
-class "PasarelaPago" as pedidos.models.PasarelaPago {
-  verificar_pago(monto: Decimal, referencia: str) -> Pago
-}
-class "PedidoGlobal" as pedidos.models.PedidoGlobal {
-  cliente
-  fecha_creacion : datetime
-  id : UUID
-  pago : Optional[Pago]
-  pedidos_puesto : List[PedidoPuesto]
-  calcular_monto_total() -> Decimal
-  cancelar(motivo: str) -> None
-  confirmar() -> None
-}
-class "PedidoPuesto" as pedidos.models.PedidoPuesto {
-  estado
-  id : UUID
-  items : List[ItemPedido]
-  puesto
-  agregar_item(producto: Producto, cantidad: int) -> None
-  calcular_subtotal() -> Decimal
-  cambiar_estado(nuevo_estado: EstadoPedidoPuesto) -> None
-}
-class "Producto" as pedidos.models.Producto {
-  id : UUID
-  nombre : str
-  precio_unitario : Decimal
-  stock_disponible : int
-  liberar_stock(cantidad: int) -> None
-  reservar_stock(cantidad: int) -> None
-}
-class "Puesto" as pedidos.models.Puesto {
-  celular_whatsapp : str
-  id : UUID
-  nombre_comerciante : str
-  numero_puesto : str
-}
-class "RepositorioPedidos" as pedidos.models.RepositorioPedidos {
-  buscar_por_id(pedido_id: uuid.UUID) -> Optional[PedidoGlobal]
-  guardar(pedido: PedidoGlobal) -> None
-}
-class "ServicioPedidos" as pedidos.models.ServicioPedidos {
-  crear_pedido_multi_puesto(cliente: Cliente, items_por_puesto: List[tuple[Puesto, List[tuple[Producto, int]]]]) -> PedidoGlobal
-  procesar_pago_yape(pedido: PedidoGlobal, referencia: str) -> bool
-}
+
+' Relaciones estructurales ordenadas
 pedidos.models.PedidoGlobal --> pedidos.models.Cliente : cliente
-pedidos.models.PedidoPuesto --> pedidos.models.EstadoPedidoPuesto : estado
-pedidos.models.ItemPedido --> pedidos.models.Producto : producto
+pedidos.models.PedidoGlobal *-- pedidos.models.PedidoPuesto : pedidos_puesto
+pedidos.models.PedidoGlobal o-- pedidos.models.Pago : pago
+
 pedidos.models.PedidoPuesto --> pedidos.models.Puesto : puesto
+pedidos.models.PedidoPuesto --> pedidos.models.EstadoPedidoPuesto : estado
+pedidos.models.PedidoPuesto *-- pedidos.models.ItemPedido : items
+pedidos.models.ItemPedido --> pedidos.models.Producto : producto
+
+pedidos.models.ServicioPedidos ..> pedidos.models.RepositorioPedidos : usa
+pedidos.models.ServicioPedidos ..> pedidos.models.PasarelaPago : usa
+pedidos.models.ServicioPedidos ..> pedidos.models.NotificadorWhatsApp : usa
+pedidos.models.ServicioPedidos ..> pedidos.models.PedidoGlobal : orquesta
+
 @enduml

@@ -1,16 +1,24 @@
 @startuml paquetes
+left to right direction
 skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam nodesep 30
+skinparam ranksep 40
+
 skinparam PackageBackgroundColor #EEF2F8
 skinparam PackageBorderColor #1A3A5C
 skinparam ArrowColor #1A3A5C
+skinparam ArrowThickness 1.2
 skinparam NoteFontSize 10
+skinparam NoteBackgroundColor #FFF9C4
+skinparam NoteBorderColor #FBC02D
 
 title San Camilo en Linea - Diagrama de Paquetes (ADR-001: Monolito Modular)
 
 ' -------------------------------------------------
-' Capa de Presentacion / API
+' Capa 1: Presentacion / API
 ' -------------------------------------------------
 package "api" as API <<Layer>> {
   package "api.rest" {
@@ -27,7 +35,7 @@ package "api" as API <<Layer>> {
 }
 
 ' -------------------------------------------------
-' Capa de Aplicacion (Modulos del Dominio)
+' Capa 2: Modulos de Aplicacion (Dominio)
 ' -------------------------------------------------
 package "catalogo" as CAT <<Module>> {
   [ServicioCatalogo]
@@ -64,7 +72,7 @@ package "entregas" as ENT <<Module>> {
 }
 
 ' -------------------------------------------------
-' Capa de Infraestructura (Adaptadores)
+' Capa 3: Infraestructura (Adaptadores)
 ' -------------------------------------------------
 package "infraestructura" as INF <<Layer>> {
   package "infraestructura.db" {
@@ -81,38 +89,40 @@ package "infraestructura" as INF <<Layer>> {
 }
 
 ' -------------------------------------------------
-' Dependencias - Presentacion hacia Aplicacion
-' (Sin dependencias ciclicas)
+' Relaciones claras de izquierda a derecha
 ' -------------------------------------------------
-API ..> CAT : usa
-API ..> PED : usa
-API ..> PAG : usa
-API ..> ENT : usa
-API ..> NOT : usa
+API --> CAT : usa
+API --> PED : usa
+API --> PAG : usa
+API --> NOT : usa
+API --> ENT : usa
 
-' Pedidos orquesta hacia otros modulos a traves de puertos
-PED ..> PAG : delega pago
-PED ..> NOT : solicita notificacion
-PED ..> CAT : consulta stock
+PED --> CAT : stock
+PED --> PAG : pago
+PED --> NOT : notifica
 
-' Adaptadores implementan los puertos declarados en modulos
-INF ..> PED : implementa RepositorioPedidos
-INF ..> CAT : implementa RepositorioCatalogo
-INF ..> ENT : implementa RepositorioEntregas
-INF ..> PAG : implementa PasarelaPago
-INF ..> NOT : implementa NotificadorWhatsApp
+CAT --> INF : implementa RepositorioCatalogo
+PED --> INF : implementa RepositorioPedidos
+PAG --> INF : implementa PasarelaPago
+NOT --> INF : implementa NotificadorWhatsApp
+ENT --> INF : implementa RepositorioEntregas
 
-note bottom of INF
-  Los adaptadores dependen de los puertos (interfaces)
-  definidos en cada modulo de aplicacion.
-  Ningun modulo de dominio conoce la infraestructura.
-  No existen ciclos de dependencia.
+note bottom of API
+  Capa de entrada:
+  Controladores REST
+  y filtros de seguridad.
 end note
 
-note right of PED
-  Modulo propietario del ciclo de vida del pedido.
-  Solo expone interfaces publicas; nunca accede
-  a tablas internas de otros modulos.
+note bottom of PED
+  Modulo propietario del
+  ciclo de vida del pedido.
+end note
+
+note bottom of INF
+  Inversion de dependencias (ADR-001):
+  La infraestructura implementa los puertos.
+  El dominio no conoce adaptadores externos.
+  Grafo estrictamente aciclico.
 end note
 
 @enduml
