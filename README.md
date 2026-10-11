@@ -128,7 +128,7 @@ La IA ayudo a proponer alternativas y a convertir las necesidades del mercado en
 | E3 - Maquina de Estados | [estados-pedido.mmd](docs/design/estados-pedido.mmd) | Nagin|
 | E4 - Diagrama de Actividades | [actividades-preparacion.puml](docs/design/actividades-preparacion.puml) | Nagin |
 | E5 - Diagrama de Paquetes | [paquetes.puml](docs/design/paquetes.puml) | Kennedy  |
-| E6 - Round-trip con IA | [src/pedidos/models.py](src/pedidos/models.py) / [classes_pedidos.puml](docs/design/classes_pedidos.puml) / [round-trip.md](docs/design/round-trip.md) | Kennedy (Integrante 3) |
+| E6 - Round-trip con IA | [src/pedidos/models.py](src/pedidos/models.py) / [classes_pedidos.puml](docs/design/classes_pedidos.puml) / [round-trip.md](docs/design/round-trip.md) | Kennedy |
 | E7 - Consistencia y Bitacora | [consistencia.md](docs/design/consistencia.md) / [bitacora-ia.md](docs/design/bitacora-ia.md) | Equipo |
 | E8 - Entrega | [README.md](README.md) / GitHub PR / tag `v0.5-diseno` | Equipo |
 
