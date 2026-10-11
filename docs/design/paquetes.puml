@@ -1,0 +1,118 @@
+@startuml paquetes
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam PackageBackgroundColor #EEF2F8
+skinparam PackageBorderColor #1A3A5C
+skinparam ArrowColor #1A3A5C
+skinparam NoteFontSize 10
+
+title San Camilo en Linea - Diagrama de Paquetes (ADR-001: Monolito Modular)
+
+' -------------------------------------------------
+' Capa de Presentacion / API
+' -------------------------------------------------
+package "api" as API <<Layer>> {
+  package "api.rest" {
+    [CatalogoController]
+    [PedidosController]
+    [PagosController]
+    [EntregasController]
+    [NotificacionesController]
+  }
+  package "api.auth" {
+    [AuthFilter]
+    [RoleGuard]
+  }
+}
+
+' -------------------------------------------------
+' Capa de Aplicacion (Modulos del Dominio)
+' -------------------------------------------------
+package "catalogo" as CAT <<Module>> {
+  [ServicioCatalogo]
+  [Producto]
+  [Puesto]
+  [RepositorioCatalogo <<port>>]
+}
+
+package "pedidos" as PED <<Module>> {
+  [ServicioPedidos]
+  [PedidoGlobal]
+  [PedidoPuesto]
+  [ItemPedido]
+  [EstadoPedidoPuesto <<enum>>]
+  [RepositorioPedidos <<port>>]
+}
+
+package "pagos" as PAG <<Module>> {
+  [ServicioPagos]
+  [Pago]
+  [PasarelaPago <<port>>]
+}
+
+package "notificaciones" as NOT <<Module>> {
+  [ServicioNotificaciones]
+  [NotificadorWhatsApp <<port>>]
+  [ColaMensajes]
+}
+
+package "entregas" as ENT <<Module>> {
+  [ServicioEntregas]
+  [Entrega]
+  [RepositorioEntregas <<port>>]
+}
+
+' -------------------------------------------------
+' Capa de Infraestructura (Adaptadores)
+' -------------------------------------------------
+package "infraestructura" as INF <<Layer>> {
+  package "infraestructura.db" {
+    [PostgresRepositorioPedidos]
+    [PostgresRepositorioCatalogo]
+    [PostgresRepositorioEntregas]
+  }
+  package "infraestructura.pagos" {
+    [YapeAdapter]
+  }
+  package "infraestructura.mensajeria" {
+    [WhatsAppAdapter]
+  }
+}
+
+' -------------------------------------------------
+' Dependencias - Presentacion hacia Aplicacion
+' (Sin dependencias ciclicas)
+' -------------------------------------------------
+API ..> CAT : usa
+API ..> PED : usa
+API ..> PAG : usa
+API ..> ENT : usa
+API ..> NOT : usa
+
+' Pedidos orquesta hacia otros modulos a traves de puertos
+PED ..> PAG : delega pago
+PED ..> NOT : solicita notificacion
+PED ..> CAT : consulta stock
+
+' Adaptadores implementan los puertos declarados en modulos
+INF ..> PED : implementa RepositorioPedidos
+INF ..> CAT : implementa RepositorioCatalogo
+INF ..> ENT : implementa RepositorioEntregas
+INF ..> PAG : implementa PasarelaPago
+INF ..> NOT : implementa NotificadorWhatsApp
+
+note bottom of INF
+  Los adaptadores dependen de los puertos (interfaces)
+  definidos en cada modulo de aplicacion.
+  Ningun modulo de dominio conoce la infraestructura.
+  No existen ciclos de dependencia.
+end note
+
+note right of PED
+  Modulo propietario del ciclo de vida del pedido.
+  Solo expone interfaces publicas; nunca accede
+  a tablas internas de otros modulos.
+end note
+
+@enduml
