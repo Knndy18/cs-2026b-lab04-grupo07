@@ -1,0 +1,56 @@
+@startuml actividades-preparacion
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #EEF2F8
+skinparam ActivityBorderColor #1A3A5C
+
+|Cliente|
+start
+:Confirma pedido global multipuesto\ny adjunta referencia de pago;
+
+|Sistema|
+:Verifica el pago con PasarelaPago;
+if (¿Pago aprobado?) then (sí)
+  :Cambia estado de los PedidoPuesto a PAGADO;
+  
+  fork
+    |Puesto Verduras|
+    :Recibe notificación por WhatsApp;
+    :Prepara los vegetales;
+    :Marca PedidoPuesto como LISTO;
+  fork again
+    |Puesto Carnes|
+    :Recibe notificación por WhatsApp;
+    :Prepara los cortes de carne;
+    :Marca PedidoPuesto como LISTO;
+  end fork
+
+  |Sistema|
+  :Verifica estado de los pedidos;
+  if (¿Todos los puestos están LISTOS?) then (sí)
+    :Asigna repartidor disponible;
+    
+    |Repartidor|
+    :Va al Mercado San Camilo;
+    :Recoge los paquetes de cada puesto;
+    :Consolida el pedido global en su mochila;
+    :Entrega el pedido en la dirección;
+    
+    |Cliente|
+    :Recibe los productos;
+    stop
+  else (no)
+    |Sistema|
+    :Espera a que falten puestos por terminar;
+    stop
+  endif
+
+else (no)
+  |Sistema|
+  :Rechaza el pedido y libera el stock;
+  |Cliente|
+  :Recibe aviso de pago inválido;
+  stop
+endif
+
+@enduml
