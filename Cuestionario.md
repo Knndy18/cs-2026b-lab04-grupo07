@@ -2,6 +2,8 @@
 
 ---
 
+# Laboratorio 04
+
 ## 1. ¿Por qué se afirma que una decisión arquitectónica es aquella "costosa de cambiar"? Dé un ejemplo de su caso.
 
 Una decisión arquitectónica es "costosa de cambiar" porque impacta las bases estructurales, la organización del código, las dependencias de infraestructura y la forma en que interactúan los módulos del sistema. Cambiarla en etapas avanzadas no implica solo modificar unas pocas líneas de código, sino reescribir componentes enteros, migrar datos y reconfigurar la infraestructura.
@@ -91,3 +93,18 @@ Al solicitar las alternativas de arquitectura backend mediante el Prompt 1, la I
 2. **Vulnerabilidades de Código/Configuración:** Copiar ciegamente reglas de seguridad o fragmentos de infraestructura sugeridos por IA puede introducir agujeros de seguridad (como endpoints desprotegidos o la exposición de credenciales) si no son revisados por un profesional humano.
 
 3. **Infracción de Licencias y Propiedad Intelectual:** La IA puede generar patrones o código copiados directamente de repositorios con licencias restrictivas sin la debida atribución.
+
+---
+
+# Laboratorio 05
+
+---
+
+## 1. ¿Qué diferencia hay entre el diseño arquitectónico del Laboratorio 04 y el diseño detallado de este laboratorio?  Dé un ejemplo de su caso. 
+## 2. ¿Cuándo usaría composición y cuándo agregación? Justifique con dos relaciones de su diagrama de clases.
+## 3. ¿Por qué en el diagrama de clases se modela la pasarela de pagos (o el servicio externo de su caso) como interfaz  y no como superclase? Relaciónelo con el ADR-001. 
+## 4. Explique la regla C1 y muestre un mensaje de su diagrama de secuencia que la incumplía antes de corregirlo.
+## 5. ¿Cómo se derivan casos de prueba a partir de un diagrama de máquina de estados? Indique cuántas pruebas  mínimas requiere su diagrama. 
+## 6. ¿Qué información del diagrama de diseño se perdió en la ingeniería inversa (E6) y por qué? 
+## 7. ¿Qué falso positivo detectó en la revisión de consistencia con IA? ¿Qué habría pasado si lo aceptaba sin verificar? 
+## 8. Según Fowler, UML puede usarse como boceto, plano o lenguaje de programación. ¿Cuál de esos usos aplicó en  este laboratorio y por qué es adecuado para un MVP de 1 mes?
