@@ -10,11 +10,11 @@ La prioridad de arquitectura es la capacidad de interaccion del comerciante: una
 
 ## Integrantes
 
-| Nombre | Rol en el laboratorio |
+| Nombre | Correo institucional |
 |---|---|
-| Pari Charrez Dean Diego | Integrante 2: alternativas, matriz y decision arquitectonica |
-| Carfer Carpio Nagin Jazmin | Integrante 3: diagramas y vista de despliegue |
-| Chirinos Rojas Kennedy | Integrante 1: requisitos, reglas, ADR y README |
+| Pari Charrez Dean Diego | dparich@unsa.edu.pe |
+| Carfer Carpio Nagin Jazmin | ncarferc@unsa.edu.pe |
+| Chirinos Rojas Kennedy | kchirinosr@unsa.edu.pe |
 
 ## Caso
 
