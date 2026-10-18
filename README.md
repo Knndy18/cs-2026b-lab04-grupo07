@@ -156,5 +156,12 @@ La IA ayudo a proponer alternativas y a convertir las necesidades del mercado en
 | E6: Round-trip con IA (codigo y diferencias) | Kennedy | Completado |
 | E7: Consistencia y bitacora de IA | Equipo | Completado |
 | E8: Revision cruzada, README y tag final | Equipo | En proceso |
-
-
+| **Laboratorio 06** | | |
+| E1: Inventario y contexto en Structurizr DSL | Diego | Completado |
+| E2: Contenedores y protocolos en workspace.dsl | Diego | Completado |
+| E3: Componentes de la API (paquetes.puml) | Kennedy | Completado |
+| E4: Vista dinamica de confirmacion y pago | Kennedy | Completado |
+| E5: Despliegue en entorno Produccion | Kennedy | Completado |
+| E6: Exportacion CLI, imagenes y comparacion | Nagin | Pendiente |
+| E7: Revision C4, explicacion y bitacora de IA | Nagin | Pendiente |
+| E8: Revision cruzada, README y tag final | Nagin | En proceso |
