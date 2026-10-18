@@ -215,3 +215,83 @@ En este laboratorio aplicamos UML fundamentalmente como **Plano (Blueprint)**, c
   2. **Previene el caos del "UML como simple boceto informal":** Un simple boceto en servilleta o pizarra habría dejado abiertas ambigüedades críticas sobre cómo gestionar el pago único en pedidos multipuesto, cómo aislar Yape o cómo evitar dependencias cíclicas.
   3. **Alineación rápida del equipo:** Al servir como plano conceptual, los tres integrantes pudieron trabajar en paralelo (clases, secuencias, estados y paquetes) teniendo total claridad sobre las interfaces y responsabilidades antes de escribir código.
 
+---
+
+# Laboratorio 06
+
+---
+
+## 1. ¿Qué problema de los diagramas tradicionales de "cajas y flechas" resuelve el modelo C4? Dé un ejemplo de ambigüedad que haya evitado en su caso.
+
+El modelo C4 resuelve la ambigüedad conceptual y la falta de abstracción de los diagramas informales de "cajas y flechas", donde no se distingue si una caja representa un servidor físico, un contenedor Docker, una aplicación web, un módulo de código o un sistema externo. Además, C4 elimina las flechas sin intención clara mediante un conjunto formal de abstracciones jerárquicas (zoom).
+
+**Ejemplo evitado en San Camilo en Línea:** En un diagrama tradicional, se podría dibujar una caja llamada "WhatsApp" conectada a una llamada "API". Esto genera ambigüedad sobre si WhatsApp es un módulo que estamos programando dentro de nuestro servidor o un servicio de terceros. C4 evitó este problema al clasificarlo explícitamente como un **Sistema de Software Externo** (`softwareSystem "WhatsApp Business API" "Externo"`) en el Nivel 1 (Contexto), aclarando que está fuera del alcance de nuestro despliegue.
+
+---
+
+## 2. ¿Qué es un "contenedor" en C4 y por qué no equivale a un contenedor Docker? Indique un contenedor de su caso que no se ejecute en Docker.
+
+En el modelo C4, un **contenedor** es cualquier aplicación ejecutable o almacén de datos que se despliega o ejecuta por separado para que el sistema funcione (por ejemplo: un sitio web, una API REST, una base de datos o un script ejecutable). No equivale a un contenedor Docker porque C4 describe la arquitectura lógica/de software y no la tecnología de virtualización de infraestructura.
+
+**Ejemplo de contenedor no ejecutable en Docker:** La **Aplicación Web Progresiva (PWA React)**. Este contenedor se ejecuta directamente en el navegador web del dispositivo móvil o PC del cliente/comerciante (`Web Browser`), fuera del entorno Docker Compose del servidor VPS.
+
+---
+
+## 3. ¿Qué público y qué nivel de detalle tiene cada uno de los cuatro niveles de C4? ¿Por qué rara vez se dibuja el nivel 4 a mano?
+
+- **Nivel 1 (Contexto del Sistema):** Muestra el sistema en el centro, los usuarios (personas) y las interacciones con sistemas externos. **Público:** Todos, incluyendo personal no técnico.
+
+- **Nivel 2 (Contenedores):** Muestra las aplicaciones ejecutables y almacenes de datos, con sus tecnologías y protocolos de comunicación. **Público:** Arquitectos, desarrolladores y personal de operaciones.
+
+- **Nivel 3 (Componentes):** Muestra los módulos internos y responsabilidades dentro de un contenedor específico (por ejemplo, los módulos de la API). **Público:** Desarrolladores y arquitectos.
+
+- **Nivel 4 (Código):** Muestra los elementos de implementación como clases, interfaces y patrones (diagrama UML). **Público:** Desarrolladores.
+
+**¿Por qué rara vez se dibuja el nivel 4 a mano?** Porque cambia con alta frecuencia a medida que se escribe código. Mantener diagramas de clases UML dibujados a mano se vuelve insostenible en proyectos reales. Es mucho más eficiente generarlos bajo demanda mediante ingeniería inversa (como `pyreverse` en el Lab 05) a partir del código fuente.
+
+---
+
+## 4. Compare la vista dinámica de C4 con el diagrama de secuencia UML de su flujo crítico. ¿Cuándo usaría cada una?
+
+- **Vista Dinámica C4:** Describe la interacción a alto nivel entre contenedores o componentes mediante pasos numerados de un caso de uso (por ejemplo: PWA $\rightarrow$ Módulo Pedidos $\rightarrow$ Pasarela Yape). Omite detalles como activaciones de hilos, llamadas a métodos o condicionales detallados.
+
+- **Diagrama de Secuencia UML:** Describe interacciones detalladas línea por línea de vida, incluyendo firmas de métodos, tipos de retorno, fragmentos combinados (`alt`, `loop`, `opt`) y llamadas síncronas/asíncronas precisas.
+
+**¿Cuándo usar cada una?**
+- Se usa la **Vista Dinámica C4** para comunicar la arquitectura general y la secuencia de comunicación entre módulos/servicios a líderes técnicos, integradores o desarrolladores durante revisiones de diseño.
+- Se usa el **Diagrama de Secuencia UML** para guiar la implementación detallada de software, especificando exactamente qué métodos invocar y cómo manejar excepciones en el código.
+
+---
+
+## 5. ¿Qué ventaja concreta tiene modelar con Structurizr DSL frente a dibujar cada vista con C4-PlantUML o Mermaid?
+
+La ventaja principal es que Structurizr DSL es un enfoque de **Modelado de Arquitectura como Código (Single Source of Truth)**, mientras que C4-PlantUML y Mermaid son herramientas de **diagramación independiente**.
+
+**Ventaja Concreta:** En Structurizr DSL se define cada elemento (persona, contenedor, relación) **una sola vez** en la sección `model {}`. Al cambiar el nombre de una tecnología (por ejemplo, cambiar la base de datos a `PostgreSQL 16`), **todas las vistas (Contexto, Contenedores, Despliegue) se actualizan automáticamente** al re-exportar. En C4-PlantUML o Mermaid habría que buscar y modificar manualmente cada archivo de diagrama.
+
+---
+
+## 6. ¿Qué elementos del modelo C4 de su caso se justifican con el ADR-001 del Laboratorio 04? Cite al menos dos.
+
+1. **Contenedor `API Backend` (Monolito Modular):** En la vista de contenedores (Nivel 2) se modeló un único contenedor de aplicación desplegado en Python/Django REST. Esto se justifica directamente en el `ADR-001`, que rechazó la arquitectura de microservicios para garantizar la entrega en 1 mes (`R-01`) y reducir la complejidad operativa.
+
+2. **Contenedores `Worker de Tareas` (Celery) y `Cola y Caché` (Redis):** La separación del procesamiento de notificaciones por WhatsApp en un *worker* asíncrono se justifica en el `ADR-001` y el escenario `QA-02`, garantizando que la caída del servicio externo de mensajería no bloquee ni pierda la persistencia de los pedidos.
+
+---
+
+## 7. Describa un error de la IA al generar o revisar su modelo C4 y cómo lo detectó con la lista de revisión.
+
+Al solicitar el borrador del modelo Structurizr DSL con el Prompt 1, la IA incluyó un nodo llamado `Broker Apache Kafka` dentro del sistema para gestionar los mensajes de WhatsApp.
+
+**Cómo se detectó:** Al aplicar la **Lista de Revisión Oficial de C4** (categoría *Elementos* e *Integridad del Sistema*) y cruzar el borrador contra los `ADRs` del Lab 04, se identificó que Kafka violaba la restricción de presupuesto de infraestructura (`R-03`) y excedía el tiempo de implementación de 1 mes (`R-01`). Se corrigió reemplazándolo por el esquema liviano `Redis + Celery Worker`.
+
+---
+
+## 8. ¿Cómo adaptaría la explicación de su arquitectura para un docente evaluador, un inversionista y un nuevo developer del equipo?
+
+- **Docente Evaluador (Enfoque Técnico y Normativo):** Se explica mediante los **Niveles 2 y 3 (Contenedores y Componentes)**, justificando la trazabilidad entre los *drivers* de calidad (`QA-01` a `QA-05`), las decisiones documentadas en los `ADRs`, la ausencia de ciclos entre módulos y la coherencia del modelo único en Structurizr DSL.
+
+- **Inversionista / Directiva del Mercado (Enfoque de Negocio y Valor):** Se explica únicamente con el **Nivel 1 (Contexto del Sistema)** y la versión no técnica en $\le 120$ palabras: cómo San Camilo en Línea conecta a clientes y comerciantes tradicionalmente no digitalizados, la facilidad de pago con Yape y la continuidad del servicio sin requerir infraestructura costosa.
+
+- **Nuevo Developer del Equipo (Enfoque de Implementación):** Se le presenta la secuencia iniciando en el **Nivel 2 (Contenedores)** para entender la pila tecnológica (React, Django REST, PostgreSQL, Redis), seguido del **Nivel 3 (Componentes)** y el **Diagrama de Clases UML (Nivel 4)** para indicarle la estructura exacta de paquetes/módulos y dónde debe programar una nueva historia de usuario.
+
