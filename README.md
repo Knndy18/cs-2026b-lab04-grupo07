@@ -186,6 +186,6 @@ C4Context
 | E3: Componentes de la API (paquetes.puml) | Kennedy | Completado |
 | E4: Vista dinamica de confirmacion y pago | Kennedy | Completado |
 | E5: Despliegue en entorno Produccion | Kennedy | Completado |
-| E6: Exportacion CLI, imagenes y comparacion | Nagin | Pendiente |
-| E7: Revision C4, explicacion y bitacora de IA | Nagin | Pendiente |
-| E8: Revision cruzada, README y tag final | Nagin | En proceso |
+| E6: Exportacion CLI, imagenes y comparacion | Nagin | Completado |
+| E7: Revision C4, explicacion y bitacora de IA | Nagin | Completado |
+| E8: Revision cruzada, README y tag final | Nagin | Completado |
