@@ -1,0 +1,17 @@
+C4Context
+  title Diagrama de Contexto - San Camilo en Línea
+  Person(cliente, "Cliente", "Comprador de Arequipa que realiza pedidos multipuesto.")
+  Person(comerciante, "Comerciante", "Vendedor del Mercado San Camilo que administra ofertas.")
+  Person(repartidor, "Repartidor", "Encargado de la entrega local de pedidos.")
+
+  System(sancamilo, "San Camilo en Línea", "Plataforma web para exploración de catálogos multipuesto, pedidos y gestión de pagos.")
+
+  System_Ext(pagos, "Proveedor de Pagos", "Pasarela de pagos digitales (Yape / Plin).")
+  System_Ext(whatsapp, "WhatsApp Business API", "Servicio externo de mensajería y notificaciones.")
+
+  Rel(cliente, sancamilo, "Explora puestos, arma carrito multipuesto y paga")
+  Rel(comerciante, sancamilo, "Publica productos, gestiona precios y stock")
+  Rel(repartidor, sancamilo, "Consulta rutas y actualiza estados de reparto")
+
+  Rel(sancamilo, pagos, "Solicita cobros y valida comprobantes", "HTTPS/JSON")
+  Rel(sancamilo, whatsapp, "Envía notificaciones de estado", "HTTPS/JSON")
