@@ -1,0 +1,62 @@
+@startuml classes_pedidos_ia
+set namespaceSeparator none
+class "AdaptadorGemini" as pedidos.ia.AdaptadorGemini {
+  {abstract}generar_respuesta(prompt: str) -> str
+}
+class "AdaptadorOpenAI" as pedidos.ia.AdaptadorOpenAI {
+  {abstract}generar_respuesta(prompt: str) -> str
+}
+class "Guardrail" as pedidos.ia.Guardrail {
+  establecer_siguiente(siguiente: Guardrail) -> Guardrail
+  validar(texto: str) -> ResultadoValidacion
+}
+class "GuardrailContenidoProhibido" as pedidos.ia.GuardrailContenidoProhibido {
+  PALABRAS_PROHIBIDAS_DEFAULT : list[str]
+}
+class "GuardrailEntradaVacia" as pedidos.ia.GuardrailEntradaVacia {
+}
+class "GuardrailFormatoRespuesta" as pedidos.ia.GuardrailFormatoRespuesta {
+  MARCADORES_ALUCINACION : list[str]
+}
+class "GuardrailLongitudMaxima" as pedidos.ia.GuardrailLongitudMaxima {
+}
+class "GuardrailPreciosValidos" as pedidos.ia.GuardrailPreciosValidos {
+}
+class "LLMConCache" as pedidos.ia.LLMConCache {
+  entradas_en_cache : int
+  proveedor_interno : ProveedorLLM
+  generar_respuesta(prompt: str) -> str
+  limpiar_cache() -> None
+}
+class "LLMSimulado" as pedidos.ia.LLMSimulado {
+  invocaciones : int
+  generar_respuesta(prompt: str) -> str
+}
+class "ProveedorLLM" as pedidos.ia.ProveedorLLM {
+  {abstract}generar_respuesta(prompt: str) -> str
+}
+class "RespuestaIA" as pedidos.ia.RespuestaIA {
+  contenido : str
+  desde_cache : bool
+  exito : bool
+  validacion_entrada : Optional[ResultadoValidacion]
+  validacion_salida : Optional[ResultadoValidacion]
+}
+class "ResultadoValidacion" as pedidos.ia.ResultadoValidacion {
+  guardrail_origen : str
+  mensaje : str
+  valido : bool
+}
+class "ServicioIA" as pedidos.ia.ServicioIA {
+  consultar(prompt: str) -> RespuestaIA
+}
+pedidos.ia.AdaptadorGemini --|> pedidos.ia.ProveedorLLM
+pedidos.ia.AdaptadorOpenAI --|> pedidos.ia.ProveedorLLM
+pedidos.ia.GuardrailContenidoProhibido --|> pedidos.ia.Guardrail
+pedidos.ia.GuardrailEntradaVacia --|> pedidos.ia.Guardrail
+pedidos.ia.GuardrailFormatoRespuesta --|> pedidos.ia.Guardrail
+pedidos.ia.GuardrailLongitudMaxima --|> pedidos.ia.Guardrail
+pedidos.ia.GuardrailPreciosValidos --|> pedidos.ia.Guardrail
+pedidos.ia.LLMConCache --|> pedidos.ia.ProveedorLLM
+pedidos.ia.LLMSimulado --|> pedidos.ia.ProveedorLLM
+@enduml

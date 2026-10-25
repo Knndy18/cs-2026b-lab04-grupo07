@@ -1,0 +1,163 @@
+@startuml ia-patrones
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam class BackgroundColor #EEF2F8
+skinparam classBorderColor #1A3A5C
+skinparam noteFontSize 10
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #FBC02D
+
+title San Camilo en Línea — Componente de IA\nPatrones: Strategy, Decorator, Chain of Responsibility
+
+' ─────────────────────────────────────────
+' STRATEGY / ADAPTER
+' ─────────────────────────────────────────
+package "Strategy / Adapter" as PKG_STRATEGY #E8F5E9 {
+
+  abstract class ProveedorLLM <<Strategy>> {
+    {abstract} + generar_respuesta(prompt: str): str
+  }
+
+  class LLMSimulado <<Fake>> {
+    - _respuestas: dict[str, str]
+    - _contador_invocaciones: int
+    + invocaciones: int
+    + generar_respuesta(prompt: str): str
+  }
+
+  class AdaptadorOpenAI <<Adapter>> {
+    - _api_key: str
+    - _modelo: str
+    + generar_respuesta(prompt: str): str
+  }
+
+  class AdaptadorGemini <<Adapter>> {
+    - _api_key: str
+    - _modelo: str
+    + generar_respuesta(prompt: str): str
+  }
+
+  ProveedorLLM <|-- LLMSimulado
+  ProveedorLLM <|-- AdaptadorOpenAI
+  ProveedorLLM <|-- AdaptadorGemini
+}
+
+' ─────────────────────────────────────────
+' DECORATOR (CACHÉ)
+' ─────────────────────────────────────────
+package "Decorator (Caché)" as PKG_CACHE #E3F2FD {
+
+  class LLMConCache <<Decorator>> {
+    - _proveedor: ProveedorLLM
+    - _cache: dict[str, str]
+    - _capacidad_maxima: int
+    + entradas_en_cache: int
+    + generar_respuesta(prompt: str): str
+    + limpiar_cache(): void
+  }
+
+  ProveedorLLM <|-- LLMConCache
+  LLMConCache o--> "1" ProveedorLLM : decora >
+}
+
+' ─────────────────────────────────────────
+' CHAIN OF RESPONSIBILITY (GUARDRAILS)
+' ─────────────────────────────────────────
+package "Chain of Responsibility (Guardrails)" as PKG_GUARDRAILS #FFF3E0 {
+
+  class ResultadoValidacion <<ValueObject>> {
+    + valido: bool
+    + mensaje: str
+    + guardrail_origen: str
+  }
+
+  abstract class Guardrail <<Handler>> {
+    - _siguiente: Optional[Guardrail]
+    + establecer_siguiente(siguiente: Guardrail): Guardrail
+    + validar(texto: str): ResultadoValidacion
+    {abstract} # _ejecutar_validacion(texto: str): ResultadoValidacion
+  }
+
+  class GuardrailEntradaVacia <<ConcreteHandler>> {
+    # _ejecutar_validacion(texto: str): ResultadoValidacion
+  }
+
+  class GuardrailLongitudMaxima <<ConcreteHandler>> {
+    - _longitud_maxima: int
+    # _ejecutar_validacion(texto: str): ResultadoValidacion
+  }
+
+  class GuardrailContenidoProhibido <<ConcreteHandler>> {
+    - _prohibidas: list[str]
+    # _ejecutar_validacion(texto: str): ResultadoValidacion
+  }
+
+  class GuardrailFormatoRespuesta <<ConcreteHandler>> {
+    - _longitud_minima: int
+    # _ejecutar_validacion(texto: str): ResultadoValidacion
+  }
+
+  class GuardrailPreciosValidos <<ConcreteHandler>> {
+    # _ejecutar_validacion(texto: str): ResultadoValidacion
+  }
+
+  Guardrail <|-- GuardrailEntradaVacia
+  Guardrail <|-- GuardrailLongitudMaxima
+  Guardrail <|-- GuardrailContenidoProhibido
+  Guardrail <|-- GuardrailFormatoRespuesta
+  Guardrail <|-- GuardrailPreciosValidos
+
+  Guardrail --> "0..1" Guardrail : siguiente >
+  Guardrail ..> ResultadoValidacion : produce >
+}
+
+' ─────────────────────────────────────────
+' SERVICIO DE IA (ORQUESTADOR)
+' ─────────────────────────────────────────
+package "Servicio de IA" as PKG_SERVICIO #F3E5F5 {
+
+  class RespuestaIA <<ValueObject>> {
+    + exito: bool
+    + contenido: str
+    + desde_cache: bool
+    + validacion_entrada: Optional[ResultadoValidacion]
+    + validacion_salida: Optional[ResultadoValidacion]
+  }
+
+  class ServicioIA <<Service>> {
+    - _proveedor: ProveedorLLM
+    - _guardrails_entrada: Optional[Guardrail]
+    - _guardrails_salida: Optional[Guardrail]
+    + consultar(prompt: str): RespuestaIA
+  }
+
+  ServicioIA --> "1" ProveedorLLM : usa >
+  ServicioIA --> "0..1" Guardrail : valida entrada >
+  ServicioIA --> "0..1" Guardrail : valida salida >
+  ServicioIA ..> RespuestaIA : produce >
+}
+
+' ─────────────────────────────────────────
+' NOTAS
+' ─────────────────────────────────────────
+note bottom of ProveedorLLM
+  Strategy: permite intercambiar
+  proveedores LLM sin modificar
+  el ServicioIA.
+end note
+
+note bottom of LLMConCache
+  Decorator: envuelve cualquier
+  ProveedorLLM y añade caché
+  de forma transparente.
+end note
+
+note right of Guardrail
+  Chain of Responsibility:
+  cada guardrail valida y delega
+  al siguiente o detiene la cadena.
+end note
+
+@enduml
+

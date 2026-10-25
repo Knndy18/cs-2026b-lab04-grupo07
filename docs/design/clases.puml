@@ -5,7 +5,7 @@ skinparam defaultFontName Arial
 skinparam class BackgroundColor #EEF2F8
 skinparam classBorderColor #1A3A5C
 
-title San Camilo en Línea - Módulos Pedidos, Catálogo y Pagos (Diseño)
+title San Camilo en Línea - Módulos Pedidos, Catálogo, Pagos e IA (Diseño)
 
 class Cliente {
   - id: UUID
@@ -110,5 +110,50 @@ ServicioPedidos ..> PedidoGlobal
 ServicioPedidos ..> RepositorioPedidos
 ServicioPedidos ..> PasarelaPago
 ServicioPedidos ..> NotificadorWhatsApp
+
+' ─────────────────────────────────────────
+' Componente de IA (Laboratorio 07 - Patrones)
+' ─────────────────────────────────────────
+package "Capa de IA (Asistente de Pedidos)" {
+  class ServicioIA <<servicio>> {
+    + consultar(prompt: String): RespuestaIA
+  }
+
+  interface ProveedorLLM <<Strategy>> {
+    + generarRespuesta(prompt: String): String
+  }
+
+  class LLMConCache <<Decorator>> {
+    - capacidadMaxima: int
+    + generarRespuesta(prompt: String): String
+    + limpiarCache(): void
+  }
+
+  class LLMSimulado <<Fake>> {
+    + invocaciones: int
+    + generarRespuesta(prompt: String): String
+  }
+
+  abstract class Guardrail <<Handler>> {
+    + establecerSiguiente(siguiente: Guardrail): Guardrail
+    + validar(texto: String): ResultadoValidacion
+  }
+
+  class RespuestaIA <<ValueObject>> {
+    + exito: boolean
+    + contenido: String
+    + desdeCache: boolean
+  }
+
+  ProveedorLLM <|.. LLMSimulado : implementa >
+  ProveedorLLM <|.. LLMConCache : decora >
+  LLMConCache o--> "1" ProveedorLLM : envuelve >
+
+  ServicioIA --> "1" ProveedorLLM : usa >
+  ServicioIA --> "0..1" Guardrail : valida entrada/salida >
+  ServicioIA ..> RespuestaIA : retorna >
+}
+
+ServicioPedidos ..> ServicioIA : asiste >
 
 @enduml
