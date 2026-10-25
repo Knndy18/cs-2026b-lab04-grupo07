@@ -1,0 +1,11 @@
+[project]
+name = "san-camilo-en-linea"
+version = "0.7.0"
+description = "Plataforma web progresiva para el Mercado San Camilo"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-v --tb=short"
+
