@@ -132,7 +132,29 @@ La IA ayudo a proponer alternativas y a convertir las necesidades del mercado en
 
 ---
 
-## Modelo C4 (Laboratorio 06)
+## Arquitectura C4 (Laboratorio 06)
+
+### Diagrama de Contexto del Sistema (Mermaid C4)
+
+```mermaid
+C4Context
+  title Diagrama de Contexto - San Camilo en Línea
+  Person(cliente, "Cliente", "Comprador de Arequipa que realiza pedidos multipuesto.")
+  Person(comerciante, "Comerciante", "Vendedor del Mercado San Camilo que administra ofertas.")
+  Person(repartidor, "Repartidor", "Encargado de la entrega local de pedidos.")
+
+  System(sancamilo, "San Camilo en Línea", "Plataforma web para exploración de catálogos multipuesto, pedidos y gestión de pagos.")
+
+  System_Ext(pagos, "Proveedor de Pagos", "Pasarela de pagos digitales (Yape / Plin).")
+  System_Ext(whatsapp, "WhatsApp Business API", "Servicio externo de mensajería y notificaciones.")
+
+  Rel(cliente, sancamilo, "Explora puestos, arma carrito multipuesto y paga")
+  Rel(comerciante, sancamilo, "Publica productos, gestiona precios y stock")
+  Rel(repartidor, sancamilo, "Consulta rutas y actualiza estados de reparto")
+
+  Rel(sancamilo, pagos, "Solicita cobros y valida comprobantes", "HTTPS/JSON")
+  Rel(sancamilo, whatsapp, "Envía notificaciones de estado", "HTTPS/JSON")
+```
 
 ### Entregables de Arquitectura C4
 
@@ -272,9 +294,9 @@ python -m pylint.pyreverse.main --source-roots src -o puml -p pedidos_ia src/ped
 | E3: Componentes de la API (paquetes.puml) | Kennedy | Completado |
 | E4: Vista dinamica de confirmacion y pago | Kennedy | Completado |
 | E5: Despliegue en entorno Produccion | Kennedy | Completado |
-| E6: Exportacion CLI, imagenes y comparacion | Nagin | Pendiente |
-| E7: Revision C4, explicacion y bitacora de IA | Nagin | Pendiente |
-| E8: Revision cruzada, README y tag final | Nagin | En proceso |
+| E6: Exportacion CLI, imagenes y comparacion | Nagin | Completado |
+| E7: Revision C4, explicacion y bitacora de IA | Nagin | Completado |
+| E8: Revision cruzada, README y tag final | Nagin | Completado |
 | **Laboratorio 07 — Patrones de Diseño** | | |
 | E1: Versión ingenua (`antes/servicio.py`), mocks (`externos.py`) y pruebas | Diego | En proceso |
 | E2: Análisis de olores (`olores.md`) y métricas de complejidad con radon (`metricas.md`) | Diego | En proceso |

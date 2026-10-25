@@ -1,0 +1,25 @@
+@startuml contexto-manual
+!include <C4/C4_Context>
+skinparam dpi 180
+LAYOUT_LEFT_RIGHT()
+
+title Diagrama de Contexto del Sistema - San Camilo en Línea (C4-PlantUML escrito a mano)
+
+Person(cliente, "Cliente", "Comprador de la ciudad de Arequipa que realiza pedidos multipuesto.")
+Person(comerciante, "Comerciante", "Vendedor del Mercado San Camilo que administra ofertas y stock.")
+Person(repartidor, "Repartidor", "Encargado de la entrega local y distribución física de los pedidos.")
+
+System(sancamilo, "San Camilo en Línea", "Plataforma web para exploración de catálogos multipuesto, coordinación de pedidos y gestión de pagos.")
+
+System_Ext(pagos, "Proveedor de Pagos", "Plataforma de pagos digitales (Yape / Plin).")
+System_Ext(whatsapp, "WhatsApp Business API", "Servicio externo de mensajería y notificaciones automáticas.")
+
+Rel(cliente, sancamilo, "Explora puestos, arma carrito multipuesto y paga pedidos")
+Rel(comerciante, sancamilo, "Publica productos, gestiona precios y atiende despachos")
+Rel(repartidor, sancamilo, "Consulta rutas de entrega y actualiza estados de reparto")
+
+Rel(sancamilo, pagos, "Solicita cobros y valida comprobantes de pago", "HTTPS/JSON")
+Rel(sancamilo, whatsapp, "Envía avisos de estado de compra y entrega", "HTTPS/JSON")
+
+SHOW_LEGEND()
+@enduml
