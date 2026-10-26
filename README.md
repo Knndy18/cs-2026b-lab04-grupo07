@@ -298,12 +298,12 @@ python -m pylint.pyreverse.main --source-roots src -o puml -p pedidos_ia src/ped
 | E7: Revision C4, explicacion y bitacora de IA | Nagin | Completado |
 | E8: Revision cruzada, README y tag final | Nagin | Completado |
 | **Laboratorio 07 — Patrones de Diseño** | | |
-| E1: Versión ingenua (`antes/servicio.py`), mocks (`externos.py`) y pruebas | Diego | En proceso |
-| E2: Análisis de olores (`olores.md`) y métricas de complejidad con radon (`metricas.md`) | Diego | En proceso |
+| E1: Versión ingenua (`antes/servicio.py`), mocks (`externos.py`) y pruebas | Diego | Completado |
+| E2: Análisis de olores (`olores.md`) y métricas de complejidad con radon (`metricas.md`) | Diego | Completado |
 | E3: Patrón State para ciclo de vida de pedidos (`estados.py`) | Nagin | En proceso |
 | E4: Patrón Observer y Decorator transversal | Nagin | En proceso |
 | E5: Capa de IA con Strategy, Decorator y Chain of Responsibility (`ia.py`) | Kennedy | Completado |
-| E6: Refactorización hacia Strategy + Adapter + Factory (`pagos.py`) | Diego | En proceso |
+| E6: Refactorización hacia Strategy + Adapter + Factory (`pagos.py`) | Diego | Completado |
 | E7: Diagramas PlantUML (State, Observer) y pruebas (`test_patrones.py`) | Nagin | En proceso |
 | E7-IA: Diagrama PlantUML y pyreverse de la Capa de IA (`ia-patrones.puml`) | Kennedy | Completado |
 | E8: ADR-005, bitácora de IA y cierre arquitectónico en README | Kennedy | Completado |
