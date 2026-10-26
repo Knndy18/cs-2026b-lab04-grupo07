@@ -1,0 +1,39 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class Pedido {
+  - id: int
+  - celular: str
+  - estado_obj: EstadoPedido
+  + cambiar_a(EstadoPedido)
+  + confirmar()
+  + pagar(operacion: str)
+  + cancelar()
+}
+
+abstract class EstadoPedido <<State>> {
+  + nombre: str
+  + {abstract} confirmar(pedido: Pedido)
+  + {abstract} pagar(pedido: Pedido, operacion: str)
+  + {abstract} cancelar(pedido: Pedido)
+}
+
+class Borrador <<ConcreteState>> {
+  + confirmar(pedido: Pedido)
+  + cancelar(pedido: Pedido)
+}
+
+class Confirmado <<ConcreteState>> {
+  + pagar(pedido: Pedido, operacion: str)
+  + cancelar(pedido: Pedido)
+}
+
+class Pagado <<ConcreteState>> {}
+class Cancelado <<ConcreteState>> {}
+
+Pedido o-> EstadoPedido
+EstadoPedido <|-- Borrador
+EstadoPedido <|-- Confirmado
+EstadoPedido <|-- Pagado
+EstadoPedido <|-- Cancelado
+@enduml
