@@ -3,7 +3,7 @@ import pytest
 from src.pedidos.externos import YapeSDK
 
 
-@pytest.fixture(params=["src.pedidos.antes.servicio"])
+@pytest.fixture(params=["src.pedidos.antes.servicio", "src.pedidos.despues.servicio"])
 def m(request):
     return importlib.import_module(request.param)
 
