@@ -1,0 +1,28 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+interface Suscriptor <<Observer>> {
+  + actualizar(evento: str, datos: dict)
+}
+
+class PublicadorEventos <<Subject>> {
+  - suscriptores: dict
+  + suscribir(evento: str, s: Suscriptor)
+  + desuscribir(evento: str, s: Suscriptor)
+  + publicar(evento: str, datos: dict)
+}
+
+class NotificadorComerciante <<ConcreteObserver>> {
+  - bandeja: list
+  + actualizar(evento: str, datos: dict)
+}
+
+class NotificadorLogistica <<ConcreteObserver>> {
+  - bandeja: list
+  + actualizar(evento: str, datos: dict)
+}
+
+PublicadorEventos o-> Suscriptor : notifica a
+Suscriptor <|.. NotificadorComerciante
+Suscriptor <|.. NotificadorLogistica
+@enduml
