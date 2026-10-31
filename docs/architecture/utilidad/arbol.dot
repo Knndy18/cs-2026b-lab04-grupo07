@@ -1,0 +1,44 @@
+digraph ArbolUtilidad {
+    rankdir=LR;
+    node [shape=box, style="filled,rounded", fontname="Arial", fontsize=10];
+    
+    // Raíz
+    Utilidad [label="Utilidad\nSan Camilo en Línea 2.0", fillcolor="#08427B", fontcolor="white", fontsize=12];
+    
+    // Atributos de Calidad
+    Modificabilidad [label="Modificabilidad", fillcolor="#D9534F", fontcolor="white"];
+    Seguridad [label="Seguridad / Isolation", fillcolor="#D9534F", fontcolor="white"];
+    Disponibilidad [label="Disponibilidad", fillcolor="#D9534F", fontcolor="white"];
+    Rendimiento [label="Rendimiento", fillcolor="#D9534F", fontcolor="white"];
+    
+    Utilidad -> Modificabilidad;
+    Utilidad -> Seguridad;
+    Utilidad -> Disponibilidad;
+    Utilidad -> Rendimiento;
+    
+    // Refinamientos
+    NuevosMercados [label="Incorporar nuevos\nmercados/reglas", fillcolor="#F0AD4E"];
+    Multitenancy [label="Aislamiento entre\nmercados (Multitenant)", fillcolor="#F0AD4E"];
+    FallasPagos [label="Tolerancia a fallas\nde pasarelas de pago", fillcolor="#F0AD4E"];
+    CargaPicos [label="Atención de solicitudes\nen picos de venta", fillcolor="#F0AD4E"];
+    
+    Modificabilidad -> NuevosMercados;
+    Seguridad -> Multitenancy;
+    Disponibilidad -> FallasPagos;
+    Rendimiento -> CargaPicos;
+    
+    // Escenarios Priorizados (H/M/L)
+    QA01 [label="(H,H) QA-01: Incorporar un nuevo mercado (Altiplano/Río Seco)\ncon sus reglas sin modificar el núcleo en <= 1 día", fillcolor="#EFEFEF"];
+    QA02 [label="(H,M) QA-02: Garantizar 0 filtraciones de datos entre comerciantes\nde distintos mercados mediante RLS en PostgreSQL", fillcolor="#EFEFEF"];
+    QA03 [label="(H,H) QA-03: Caída de Yape/Plin por 20 min -> 0 pedidos perdidos\ny recuperación automática mediante Outbox Pattern", fillcolor="#EFEFEF"];
+    QA04 [label="(H,M) QA-04: Carga simultánea de 20 req/s entre los 3 mercados\n-> tiempo de respuesta p95 del catálogo <= 1.5 s", fillcolor="#EFEFEF"];
+    QA05 [label="(M,L) QA-05: Incorporar nuevo medio de pago en <= 2 días-persona", fillcolor="#EFEFEF"];
+    QA06 [label="(M,L) QA-06: Cifrado de datos personales en tránsito (HTTPS) y reposo", fillcolor="#EFEFEF"];
+    
+    NuevosMercados -> QA01;
+    NuevosMercados -> QA05;
+    Multitenancy -> QA02;
+    Multitenancy -> QA06;
+    FallasPagos -> QA03;
+    CargaPicos -> QA04;
+}
