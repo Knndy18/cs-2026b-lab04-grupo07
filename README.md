@@ -314,7 +314,7 @@ python -m pylint.pyreverse.main --source-roots src -o puml -p pedidos_ia src/ped
 | E4: Iteraciones 2 y 3 de ADD — Disponibilidad y Multitenancy (`add/iteracion-2.md`, `add/iteracion-3.md`) | Kennedy | Completado |
 | E5: Fitness functions en CI (`.github/workflows/fitness.yml` e `import-linter`) | Nagin | En proceso |
 | E6: ADRs (006, 007, 008) y actualización C4 en Structurizr (`workspace.dsl`) | Nagin | En proceso |
-| E7: Matriz de riesgos mitigados y bitácora de IA en `bitacora-ia.md` | Diego | En proceso |
+| E7: Matriz de riesgos mitigados y bitácora de IA en `bitacora-ia.md` | Diego | Completado |
 | E8: README consolidado, Pull Requests y etiquetado Git `v0.8-arquitectura` | Equipo | En proceso |
 
 ---
