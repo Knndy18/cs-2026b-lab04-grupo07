@@ -306,7 +306,26 @@ python -m pytest tests/ -v --tb=short
 ```
 
 ---
+### Fitness Functions Automatizadas en CI/CD (E5)
 
+La integridad de la arquitectura se protege contra la degradación mediante pruebas automáticas ejecutadas en cada Pull Request a través de `.github/workflows/fitness.yml`:
+
+- **Contratos Estructurales (`import-linter`):**
+  - `FF-01`: Valida la arquitectura en capas del monolito modular y garantiza la ausencia total de dependencias cíclicas entre módulos.
+  - `FF-02`: Asegura que ningún módulo de negocio (`catalogo`, `pedidos`, etc.) importe adaptadores concretos de pasarela de pago, preservando la inversión de dependencias.
+- **Fitness Functions de Calidad (`pytest`):**
+  - `test_ff01_rendimiento_carga_pico`: Verifica el presupuesto de latencia ($p95 \le 2000\text{ ms}$) bajo la carga pico de $16\text{ req/s}$ [QA-01].
+  - `test_ff02_cero_pedidos_perdidos_con_circuit_breaker`: Comprueba la resiliencia ante la caída del proveedor externo, exigiendo $0$ pedidos perdidos gracias a la tabla outbox [QA-03].
+  - `test_ff03_breaker_reduce_llamadas_a_proveedor_caido`: Valida que el Circuit Breaker mitigue y reduzca a menos de una cuarta parte las llamadas hacia servicios no disponibles [QA-03].
+
+### Trazabilidad y Decisiones Arquitectónicas (E6)
+
+- **Modelo C4 (`docs/architecture/c4/workspace.dsl`):** Actualizado con anotaciones explícitas de escenarios de calidad (`[QA-01]`, `[QA-03]`, `[QA-04]`) en la API Backend, Caché Redis, Base de Datos y componentes internos.
+- **Registros de Decisión Arquitectónica:**
+  - [ADR-006: Índice y Caché Redis para Catálogo (QA-01)](docs/architecture/adr/ADR-006-indice-y-cache-catalogo.md)
+  - [ADR-007: Circuit Breaker y Patrón Outbox para Resiliencia en Pagos (QA-03)](docs/architecture/adr/ADR-007-circuit-breaker-y-outbox.md)
+  - [ADR-008: Aislamiento Multitenencia mediante PostgreSQL RLS (QA-04)](docs/architecture/adr/ADR-008-aislamiento-multitenant-rls.md)
+---
 ## Estado del trabajo
 
 | Entregable | Responsable | Estado |
