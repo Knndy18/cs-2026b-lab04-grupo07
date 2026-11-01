@@ -1,5 +1,7 @@
 # San Camilo en Linea 
 
+![fitness-functions](https://github.com/Knndy18/cs-2026b-lab04-grupo07/actions/workflows/fitness.yml/badge.svg)
+
 Construccion de Software - EPIS UNSA - 2026-B - Grupo 07
 
 ## Resumen 
