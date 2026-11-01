@@ -30,6 +30,12 @@
 
 ---
 
+### Matriz de Probabilidad e Impacto de Riesgos
+
+![Matriz de Riesgos ATAM-lite](matriz-riesgos.png)
+
+---
+
 ## 4. Respuesta Fundamentada a la Evaluación del Evaluador Adversario
 
 > **Pregunta Incómoda del Evaluador Adversario:**
