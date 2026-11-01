@@ -23,7 +23,7 @@ jobs:
           pip install import-linter pytest matplotlib
 
       - name: Validar arquitectura estructural (import-linter)
-        run: lint-imports
+        run: PYTHONPATH=.:src lint-imports
 
       - name: Validar fitness functions de calidad (pytest)
-        run: pytest -v tests/test_fitness.py
+        run: PYTHONPATH=.:src pytest -v tests/test_fitness.py
