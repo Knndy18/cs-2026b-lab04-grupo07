@@ -35,3 +35,18 @@
 ### Prompt 7 (Interacción 7 – Lab 06, E4/E5)
 > "Continúa con los ejercicios E4 y E5. (E4) Define una vista `dynamic` para el flujo crítico de confirmación y pago de un pedido multi-puesto con Yape, reutilizando el escenario de `secuencia-flujo.puml` con al menos 4 pasos numerados. (E5) Define el `deploymentEnvironment 'Producción'` coherente con `despliegue.puml` y `drivers.md` (R-03), anidando correctamente los nodos de infraestructura (Dispositivo de usuario/Navegador PWA, Servidor VPS, Docker Compose con contenedores) y ubicando una `containerInstance` de cada contenedor E2 en su nodo correspondiente. Asegura sintaxis 100% válida para `./structurizr.sh validate -w workspace.dsl`."
 
+---
+
+# Bitácora de Interacciones con la IA – Laboratorio 08
+
+**Caso de Estudio:** San Camilo en Línea 2.0 (Expansión a Mercados Altiplano y Río Seco)
+
+| # | Fecha | Herramienta | Prompt (Resumen) | Propuesta de la IA | Verificación del Equipo | Decisión y Corrección |
+|---|---|---|---|---|---|---|
+| **1** | 27/10/2026 | Gemini | Detector de Escenarios para el Árbol de Utilidad (`QA-01` a `QA-06`). | Propuso calificar el cifrado de datos (`QA-06`) como `(H, H)` (Alta Importancia, Alta Dificultad). | Se revisó `drivers.md` del Lab 04 y se constató que HTTPS y cifrado de disco ya están implementados. | **Corregida:** Se bajó a `(M, L)` para priorizar los escenarios reales de modificabilidad `QA-01` y aislamiento `QA-02`. |
+| **2** | 28/10/2026 | Gemini | Tácticas para el crecimiento a 3 mercados (San Camilo, Altiplano y Río Seco). | Sugirió migrar inmediatamente a Microservicios con Kubernetes y bases de datos independientes por mercado. | Violaba la restricción presupuestal de 1 VPS (`R-03`) y el tiempo límite de 1 mes (`R-01`). | **Rechazada:** Se mantuvo el Monolito Modular (`ADR-001`) con Row-Level Security (RLS) en PostgreSQL. |
+| **3** | 28/10/2026 | Gemini | Tácticas de Resiliencia ante caídas de Yape/Plin (`QA-03`). | Propuso guardar la cola de pagos pendientes exclusivamente en memoria caché con Redis. | Al reiniciar el contenedor de Redis sin persistencia en disco, los pagos pendientes se pierden. | **Corregida:** Se cambió por el patrón *Outbox* con una tabla dedicada en PostgreSQL procesada por Celery. |
+| **4** | 29/10/2026 | Gemini | Evaluador Adversario ATAM-lite (`Prompt 3`). | Afirmó como riesgo que "El Monolito Modular colapsará con la carga combinada de los 3 mercados". | Se ejecutó la simulación de carga con $20\text{ req/s}$ mostrando utilización de CPU del $35\%$ con 4 workers. | **Rechazada (Falso Positivo):** Se refutó con evidencia cuantitativa de la simulación de rendimiento. |
+| **5** | 30/10/2026 | Gemini | Generación de Fitness Functions para CI con `import-linter`. | Sugirió contratos de dependencias bloqueando importaciones entre paquetes del Monolito Modular. | Se validó en local provocando una importación cíclica de prueba que rompió el build en verde. | **Aceptada:** Se integró en `.importlinter` y GitHub Actions (`.github/workflows/fitness.yml`). |
+
+---
