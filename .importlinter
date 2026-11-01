@@ -1,19 +1,18 @@
 [importlinter]
-root_package = san_camilo
+root_package = pedidos
+syspath = src
 
 [importlinter:contract:capas]
-name = FF-01 Capas del sistema sin dependencias ciclicas
+name = FF-01 Capas del monolito modular sin dependencias ciclicas
 type = layers
 layers =
-    san_camilo.pedidos
-    san_camilo.catalogo | san_camilo.pagos | san_camilo.notificaciones
-    san_camilo.compartido
+    pedidos.ia
+    pedidos.models
 
 [importlinter:contract:puertos]
 name = FF-02 Solo el arranque conoce los adaptadores de pago (ADR-005)
 type = forbidden
 source_modules =
-    san_camilo.pedidos
-    san_camilo.catalogo
+    pedidos.models
 forbidden_modules =
-    san_camilo.pagos.adaptadores
+    pedidos.ia.adaptadores
