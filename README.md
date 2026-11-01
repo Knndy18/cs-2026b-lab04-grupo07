@@ -266,6 +266,86 @@ python -m pylint.pyreverse.main --source-roots src -o puml -p pedidos_ia src/ped
 
 ---
 
+## Diseno de Arquitectura (ADD) y Metricas Cuantitativas (Laboratorio 08)
+
+### Contexto: San Camilo en Linea 2.0 (Expansion Multitenant)
+
+En esta etapa, la plataforma evoluciona a **San Camilo en Linea 2.0** incorporando soporte para los mercados **Altiplano** y **Rio Seco** bajo una arquitectura *Multitenant* sobre el monolito modular existente (`ADR-001`). El diseno arquitectonico se ejecuta aplicando **Attribute-Driven Design (ADD 3.0)** guiado por los atributos de calidad priorizados en el Arbol de Utilidad y evaluados bajo ATAM-lite.
+
+### Division de tareas para 3 integrantes (Laboratorio 08)
+
+Siguiendo la distribucion y sorteo de responsabilidades del equipo:
+
+| Integrante | Rol Principal | Entregables a Cargo | Tareas Especificas |
+|---|---|---|---|
+| **Diego** (Integrante 1) | Modelado, ATAM y Calidad | E1, E3, E7 | - Disenar los 6 escenarios de calidad medibles y renderizar el arbol de utilidad en Graphviz (`utilidad/arbol.dot` y `arbol.png`).<br>- Gestionar la sesion de evaluacion ATAM-lite, registrar sensibilidades, trade-offs y la matriz de riesgos en `docs/architecture/atam-lite.md`.<br>- Documentar la bitacora de interaccion con IA (`bitacora-ia.md`) con descarte de falsos positivos. |
+| **Kennedy** (Integrante 2) | ADD y Evidencia Cuantitativa | E2, E4 | - Calibrar y ejecutar los scripts de simulacion matematica en `fitness/` (`rendimiento.py` y `disponibilidad.py`) con los parametros del caso.<br>- Documentar la **Iteracion 1 de ADD** en `add/iteracion-1.md` enfocada en Rendimiento ([QA-04]), evaluando 3 tacticas con descarte justificado y evidencia cuantitativa.<br>- Elaborar las **Iteraciones 2 y 3 de ADD** en `add/iteracion-2.md` ([QA-03] Disponibilidad / Outbox) y `add/iteracion-3.md` ([QA-01, QA-02] Modificabilidad y Multitenancy con RLS). |
+| **Nagin** (Integrante 3) | Automatizacion, CI/CD y ADRs | E5, E6, E8 | - Configurar fitness functions estructurales (`import-linter`) y de calidad en `.github/workflows/fitness.yml`.<br>- Redactar los registros de decision arquitectonica (ADR-006, ADR-007, ADR-008) y actualizar el modelo C4 (`c4/workspace.dsl`).<br>- Integrar badges de CI en el README y gestionar el versionado con la etiqueta Git `v0.8-arquitectura`. |
+
+### Arbol de Utilidad de San Camilo en Linea 2.0
+
+```mermaid
+graph LR
+    U["Utilidad<br/>San Camilo 2.0"] --> MOD["Modificabilidad"]
+    U --> DISP["Disponibilidad"]
+    U --> REND["Rendimiento"]
+    U --> SEG["Seguridad / Isolation"]
+
+    MOD --> QA01["(H,H) QA-01: Nuevo mercado Altiplano/Rio Seco en <= 1 dia sin tocar codigo nucleo"]
+    MOD --> QA05["(M,L) QA-05: Nuevo medio de pago en <= 2 dias-persona"]
+    DISP --> QA03["(H,H) QA-03: Caida Yape/Plin 20 min -> 0 pedidos perdidos (Outbox Pattern)"]
+    REND --> QA04["(H,M) QA-04: Carga 20 req/s simultanea -> p95 catalogo <= 1.5 s (Redis TTL=30s)"]
+    SEG --> QA02["(H,M) QA-02: 0 filtraciones entre mercados (RLS en PostgreSQL)"]
+    SEG --> QA06["(M,L) QA-06: Cifrado en transito (HTTPS) y reposo en VPS unico"]
+
+    classDef root fill:#08427B,stroke:#042340,color:#fff
+    classDef attr fill:#D9534F,stroke:#B52B27,color:#fff
+    classDef qa_hh fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef qa_hm fill:#FFF3E0,stroke:#E65100,color:#000
+    classDef qa_ml fill:#F5F5F5,stroke:#9E9E9E,color:#000
+
+    class U root
+    class MOD,DISP,REND,SEG attr
+    class QA01,QA03 qa_hh
+    class QA02,QA04 qa_hm
+    class QA05,QA06 qa_ml
+```
+
+### Entregables del Bloque de ADD y Evidencia Cuantitativa (Integrante 2: Kennedy)
+
+| Entregable | Documento | Atributo / Escenario | Tacticas Evaluadas | Decision y Descarte | Evidencia Cuantitativa |
+|---|---|---|---|---|---|
+| **E2 — Iteracion 1 ADD** | [iteracion-1.md](add/iteracion-1.md) | **Rendimiento**<br>`[QA-04]` (H, M) | 1. Directo a BD (baseline)<br>2. Replica de lectura PostgreSQL<br>3. Cache Redis TTL = 30 s | **Elegida:** Cache Redis 7.<br>**Descartada:** Replicas PostgreSQL (viola R-03 VPS unico y anade *replication lag*). | **$p95$ reducido de $579.5\text{ ms}$ a $92.9\text{ ms}$ (-84%)**.<br>Utilizacion $\rho$ cae de $72.5\%$ a $15.5\%$. |
+| **E4 — Iteracion 2 ADD** | [iteracion-2.md](add/iteracion-2.md) | **Disponibilidad**<br>`[QA-03]` (H, H) | 1. Llamada directa (baseline)<br>2. Reintentos backoff exp.<br>3. Transactional Outbox + Celery | **Elegida:** Outbox Pattern.<br>**Descartada:** Reintentos directos (ventana de 7 min insuficiente para caida de 20 min). | **0 pedidos perdidos ($0.0\%$)** vs 15.5% en baseline.<br>100% transacciones recuperadas en $p95 \le 14.94\text{ min}$. |
+| **E4 — Iteracion 3 ADD** | [add/iteracion-3.md](add/iteracion-3.md) | **Modificabilidad & Seguridad**<br>`[QA-01, QA-02]` | 1. BD por mercado<br>2. Arquitectura de Plugins<br>3. Config-Driven + RLS | **Elegida:** Config-Driven Multitenancy + RLS.<br>**Descartada:** BD por mercado (demanda $>1.8\text{ GB}$ RAM, viola R-03). | **0 archivos del nucleo modificados (-100%)**.<br>Despliegue en $\le 0.25\text{ dias}$. Overhead RLS de apenas $2\%$. |
+
+### Evidencia Cuantitativa y Resultados de Simulacion
+
+#### 1. Rendimiento del Catalogo con 20 req/s ([QA-04])
+La simulacion analitica de colas $M/M/c$ y estocastica de eventos discretos ($N = 50\,000$ peticiones) ejecutada con `fitness/rendimiento.py` demostro que la incorporacion de la cache Redis 7 con expiracion de 30 segundos garantiza holgadamente el SLA de $1\,500\text{ ms}$:
+
+![Rendimiento Antes vs Despues](fitness/rendimiento_resultados.png)
+
+#### 2. Disponibilidad y Resiliencia ante Caidas de Pasarelas ([QA-03])
+La simulacion estocastica Monte Carlo ($N = 10\,000$ pedidos) ejecutada con `fitness/disponibilidad.py` demostro que el *Transactional Outbox Pattern* elimina la perdida de pedidos frente a la llamada directa ($15.5\%$ de perdidas) y reintentos en linea ($10.0\%$ de perdidas):
+
+![Disponibilidad Antes vs Despues](fitness/disponibilidad_resultados.png)
+
+### Instrucciones de Ejecucion de las Simulaciones de Calidad
+
+```bash
+# 1. Ejecutar la simulacion matematica de Rendimiento M/M/c (E2)
+python fitness/rendimiento.py
+
+# 2. Ejecutar la simulacion Monte Carlo de Disponibilidad (E4)
+python fitness/disponibilidad.py
+
+# 3. Ejecutar las 58 pruebas unitarias del sistema (100% aprobadas)
+python -m pytest tests/ -v --tb=short
+```
+
+---
+
 ## Estado del trabajo
 
 | Entregable | Responsable | Estado |
@@ -279,7 +359,7 @@ python -m pylint.pyreverse.main --source-roots src -o puml -p pedidos_ia src/ped
 | E6: despliegue | Nagin | Completado |
 | E7: bitacora de IA | Diego | Completado |
 | E8: README y revision cruzada | Equipo | Completado |
-| **Laboratorio 05 — Diseño UML** | | |
+| **Laboratorio 05 — Diseno UML** | | |
 | E1: Historia de usuario y diagrama de clases | Diego | Completado |
 | E2: Diagrama de secuencia | Diego | Completado |
 | E3: Maquina de estados (Mermaid) | Nagin | Completado |
@@ -297,47 +377,22 @@ python -m pylint.pyreverse.main --source-roots src -o puml -p pedidos_ia src/ped
 | E6: Exportacion CLI, imagenes y comparacion | Nagin | Completado |
 | E7: Revision C4, explicacion y bitacora de IA | Nagin | Completado |
 | E8: Revision cruzada, README y tag final | Nagin | Completado |
-| **Laboratorio 07 — Patrones de Diseño** | | |
-| E1: Versión ingenua (`antes/servicio.py`), mocks (`externos.py`) y pruebas | Diego | Completado |
-| E2: Análisis de olores (`olores.md`) y métricas de complejidad con radon (`metricas.md`) | Diego | Completado |
-| E3: Patrón State para ciclo de vida de pedidos (`estados.py`) | Nagin | Completado |
-| E4: Patrón Observer y Decorator transversal | Nagin | Completado |
+| **Laboratorio 07 — Patrones de Diseno** | | |
+| E1: Version ingenua (`antes/servicio.py`), mocks (`externos.py`) y pruebas | Diego | Completado |
+| E2: Analisis de olores (`olores.md`) y metricas de complejidad con radon (`metricas.md`) | Diego | Completado |
+| E3: Patron State para ciclo de vida de pedidos (`estados.py`) | Nagin | Completado |
+| E4: Patron Observer y Decorator transversal | Nagin | Completado |
 | E5: Capa de IA con Strategy, Decorator y Chain of Responsibility (`ia.py`) | Kennedy | Completado |
-| E6: Refactorización hacia Strategy + Adapter + Factory (`pagos.py`) | Diego | Completado |
+| E6: Refactorizacion hacia Strategy + Adapter + Factory (`pagos.py`) | Diego | Completado |
 | E7: Diagramas PlantUML (State, Observer) y pruebas (`test_patrones.py`) | Nagin | Completado |
 | E7-IA: Diagrama PlantUML y pyreverse de la Capa de IA (`ia-patrones.puml`) | Kennedy | Completado |
-| E8: ADR-005, bitácora de IA y cierre arquitectónico en README | Kennedy | Completado |
-| **Laboratorio 08 — Diseño de Arquitectura (ADD) y Métricas** | | |
-| E1: Árbol de utilidad en Graphviz (`arbol.dot` y `arbol.md`) | Diego | Completado |
-| E2: Iteración 1 de ADD — Rendimiento (`add/iteracion-1.md`) y `fitness/rendimiento.py` | Kennedy | Completado |
-| E3: Informe de evaluación ATAM-lite y matriz de riesgos (`atam-lite.md`) | Diego | Completado |
+| E8: ADR-005, bitacora de IA y cierre arquitectonico en README | Kennedy | Completado |
+| **Laboratorio 08 — Diseno de Arquitectura (ADD) y Metricas** | | |
+| E1: Arbol de utilidad en Graphviz (`arbol.dot` y `arbol.md`) | Diego | Completado |
+| E2: Iteracion 1 de ADD — Rendimiento (`add/iteracion-1.md`) y `fitness/rendimiento.py` | Kennedy | Completado |
+| E3: Informe de evaluacion ATAM-lite y matriz de riesgos (`atam-lite.md`) | Diego | Completado |
 | E4: Iteraciones 2 y 3 de ADD — Disponibilidad y Multitenancy (`add/iteracion-2.md`, `add/iteracion-3.md`) | Kennedy | Completado |
 | E5: Fitness functions en CI (`.github/workflows/fitness.yml` e `import-linter`) | Nagin | En proceso |
-| E6: ADRs (006, 007, 008) y actualización C4 en Structurizr (`workspace.dsl`) | Nagin | En proceso |
-| E7: Matriz de riesgos mitigados y bitácora de IA en `bitacora-ia.md` | Diego | Completado |
+| E6: ADRs (006, 007, 008) y actualizacion C4 en Structurizr (`workspace.dsl`) | Nagin | En proceso |
+| E7: Matriz de riesgos mitigados y bitacora de IA en `bitacora-ia.md` | Diego | Completado |
 | E8: README consolidado, Pull Requests y etiquetado Git `v0.8-arquitectura` | Equipo | En proceso |
-
----
-
-## Diseño Guiado por Atributos (ADD) y Evidencia Cuantitativa (Laboratorio 08)
-
-### Entregables del Bloque de ADD y Simulación Cuantitativa (Integrante 2: Kennedy)
-
-| Entregable | Archivo(s) | Responsable | Descripción |
-|---|---|---|---|
-| **E2 — Iteración 1 de ADD** | [add/iteracion-1.md](add/iteracion-1.md) | Kennedy | Diseño de rendimiento [QA-04] ($p95 \le 1.5\text{ s}$ ante 20 req/s), evaluación de 3 tácticas, descarte de réplica de lectura y adopción de caché Redis TTL = 30 s. |
-| **E2 — Simulación de Rendimiento** | [fitness/rendimiento.py](fitness/rendimiento.py) / [Gráfico](fitness/rendimiento_resultados.png) | Kennedy | Modelo matemático de colas $M/M/c$ con simulación discreta ($N=50\,000$). Reducción de $p95$ de $579.5\text{ ms}$ a $92.9\text{ ms}$ (-84%) y utilización $\rho$ de $0.725$ a $0.155$. |
-| **E4 — Iteración 2 de ADD** | [add/iteracion-2.md](add/iteracion-2.md) | Kennedy | Diseño de disponibilidad [QA-03] ante caídas de Yape/Plin por 20 min. Comparativa de llamadas directas, reintentos y Transactional Outbox Pattern con Celery. |
-| **E4 — Simulación de Disponibilidad** | [fitness/disponibilidad.py](fitness/disponibilidad.py) / [Gráfico](fitness/disponibilidad_resultados.png) | Kennedy | Simulación estocástica Monte Carlo ($N=10\,000$). Reducción de pérdida de pedidos de $15.5\%$ a $0.0\%$ ($0$ pedidos perdidos y $100\%$ recuperados en $p95 \le 14.94\text{ min}$). |
-| **E4 — Iteración 3 de ADD** | [add/iteracion-3.md](add/iteracion-3.md) | Kennedy | Diseño de modificabilidad [QA-01] y seguridad multitenant [QA-02]. Config-driven multitenancy con Row-Level Security (RLS) en PostgreSQL, descartando bases de datos separadas. Despliegue en $\le 0.25\text{ días}$ con 0 cambios en el código núcleo. |
-
-### Instrucciones de Ejecución de las Fitness Functions y Simulaciones
-
-```bash
-# 1. Ejecutar la simulación analítica y gráfica de Rendimiento (M/M/c)
-python fitness/rendimiento.py
-
-# 2. Ejecutar la simulación Monte Carlo de Disponibilidad (Outbox Pattern)
-python fitness/disponibilidad.py
-```
-
