@@ -171,27 +171,6 @@ C4Context
 
 ## Patrones de Diseño y Capa de IA (Laboratorio 07)
 
-### División de tareas para 3 integrantes
-
-Para equilibrar la carga técnica, de pruebas y de documentación entre 3 personas, el equipo realizó el sorteo y distribución de responsabilidades y bloques de trabajo:
-
-| Integrante | Rol Principal | Entregables a Cargo | Tareas Específicas |
-|---|---|---|---|
-| **Diego** (Integrante 1) | Línea Base, Variabilidad y Fábrica | E1, E2 y parte de E6 | • Implementar la versión ingenua (`src/<modulo>/antes/servicio.py`) y los mocks en `externos.py`.<br>• Diseñar y ejecutar las 8+ pruebas de caracterización iniciales.<br>• Identificar olores y redactar `olores.md`.<br>• Refactorizar hacia Strategy + Adapter + Factory (`pagos.py` o módulo equivalente).<br>• Medir la complejidad inicial y final con `radon` para `metricas.md`. |
-| **Nagin** (Integrante 2) | Ciclo de Vida y Eventos del Dominio | E3, E4 y parte de E7 | • Implementar el patrón State traduciendo la máquina de estados del Lab 05 (`estados.py`).<br>• Implementar Observer y Decorator transversal (o patrón alternativo del caso).<br>• Crear las pruebas unitarias para transiciones inválidas y eventos de suscripción en `tests/test_patrones.py`.<br>• Elaborar los diagramas PlantUML de State, Observer y la interacción del servicio en `docs/design/patrones/`. |
-| **Kennedy** (Integrante 3) | Capa de IA, Guardrails y Cierre Arquitectónico | E5, E7 (IA) y E8 | • Diseñar la arquitectura del componente de IA en `ia.py` (Strategy/Adapter, Decorator de caché y Chain of Responsibility para guardrails).<br>• Implementar el LLM simulado y las pruebas de validación de salida / guardrails.<br>• Elaborar el diagrama PlantUML de la arquitectura de IA y actualización de `clases.puml` con el soporte de `pyreverse`.<br>• Documentar `bitacora-ia.md`, redactar el `ADR-005` y actualizar el `README.md`. |
-
-### Entregables del Bloque de IA y Cierre (Integrante 3: Kennedy)
-
-| Entregable | Archivo(s) | Responsable | Descripción |
-|---|---|---|---|
-| **E5 - Arquitectura IA** | [src/pedidos/ia.py](src/pedidos/ia.py) | Kennedy | Componente con Strategy/Adapter (`ProveedorLLM`), Decorator (`LLMConCache`) y Chain of Responsibility (`Guardrail`) |
-| **E5 - LLM Simulado y Pruebas** | [tests/test_ia.py](tests/test_ia.py) / [tests/conftest.py](tests/conftest.py) | Kennedy | 38 pruebas unitarias automatizadas con pytest (100% aprobadas) para guardrails, caché e integración |
-| **E7 - Diagrama de Clases IA** | [ia-patrones.puml](docs/design/patrones/ia-patrones.puml) / [classes_pedidos_ia.puml](docs/design/patrones/classes_pedidos_ia.puml) / [clases.puml](docs/design/clases.puml) | Kennedy | Modelado conceptual PlantUML, ingeniería inversa con pyreverse y actualización del modelo general |
-| **E8 - ADR-005** | [005-capa-ia-guardrails.md](docs/architecture/adr/005-capa-ia-guardrails.md) | Kennedy | Justificación de Strategy/Adapter, Decorator de caché y Chain of Responsibility para guardrails |
-| **E8 - Bitácora de IA** | [bitacora-ia.md](docs/design/patrones/bitacora-ia.md) | Kennedy | Registro de prompts, propuestas aceptadas y rechazadas durante el Lab 07 |
-| **E8 - Cierre Arquitectónico** | [README.md](README.md) | Kennedy | Documentación y consolidación de la arquitectura de patrones del Laboratorio 07 |
-
 ### Arquitectura de Patrones en la Capa de IA
 
 La capa de inteligencia artificial para el módulo `pedidos` fue diseñada e implementada bajo tres patrones de diseño complementarios ([ADR-005](docs/architecture/adr/005-capa-ia-guardrails.md)):
@@ -272,16 +251,6 @@ python -m pylint.pyreverse.main --source-roots src -o puml -p pedidos_ia src/ped
 
 En esta etapa, la plataforma evoluciona a **San Camilo en Linea 2.0** incorporando soporte para los mercados **Altiplano** y **Rio Seco** bajo una arquitectura *Multitenant* sobre el monolito modular existente (`ADR-001`). El diseno arquitectonico se ejecuta aplicando **Attribute-Driven Design (ADD 3.0)** guiado por los atributos de calidad priorizados en el Arbol de Utilidad y evaluados bajo ATAM-lite.
 
-### Division de tareas para 3 integrantes (Laboratorio 08)
-
-Siguiendo la distribucion y sorteo de responsabilidades del equipo:
-
-| Integrante | Rol Principal | Entregables a Cargo | Tareas Especificas |
-|---|---|---|---|
-| **Diego** (Integrante 1) | Modelado, ATAM y Calidad | E1, E3, E7 | - Disenar los 6 escenarios de calidad medibles y renderizar el arbol de utilidad en Graphviz (`utilidad/arbol.dot` y `arbol.png`).<br>- Gestionar la sesion de evaluacion ATAM-lite, registrar sensibilidades, trade-offs y la matriz de riesgos en `docs/architecture/atam-lite.md`.<br>- Documentar la bitacora de interaccion con IA (`bitacora-ia.md`) con descarte de falsos positivos. |
-| **Kennedy** (Integrante 2) | ADD y Evidencia Cuantitativa | E2, E4 | - Calibrar y ejecutar los scripts de simulacion matematica en `fitness/` (`rendimiento.py` y `disponibilidad.py`) con los parametros del caso.<br>- Documentar la **Iteracion 1 de ADD** en `add/iteracion-1.md` enfocada en Rendimiento ([QA-04]), evaluando 3 tacticas con descarte justificado y evidencia cuantitativa.<br>- Elaborar las **Iteraciones 2 y 3 de ADD** en `add/iteracion-2.md` ([QA-03] Disponibilidad / Outbox) y `add/iteracion-3.md` ([QA-01, QA-02] Modificabilidad y Multitenancy con RLS). |
-| **Nagin** (Integrante 3) | Automatizacion, CI/CD y ADRs | E5, E6, E8 | - Configurar fitness functions estructurales (`import-linter`) y de calidad en `.github/workflows/fitness.yml`.<br>- Redactar los registros de decision arquitectonica (ADR-006, ADR-007, ADR-008) y actualizar el modelo C4 (`c4/workspace.dsl`).<br>- Integrar badges de CI en el README y gestionar el versionado con la etiqueta Git `v0.8-arquitectura`. |
-
 ### Arbol de Utilidad de San Camilo en Linea 2.0
 
 ```mermaid
@@ -310,14 +279,6 @@ graph LR
     class QA02,QA04 qa_hm
     class QA05,QA06 qa_ml
 ```
-
-### Entregables del Bloque de ADD y Evidencia Cuantitativa (Integrante 2: Kennedy)
-
-| Entregable | Documento | Atributo / Escenario | Tacticas Evaluadas | Decision y Descarte | Evidencia Cuantitativa |
-|---|---|---|---|---|---|
-| **E2 — Iteracion 1 ADD** | [iteracion-1.md](add/iteracion-1.md) | **Rendimiento**<br>`[QA-04]` (H, M) | 1. Directo a BD (baseline)<br>2. Replica de lectura PostgreSQL<br>3. Cache Redis TTL = 30 s | **Elegida:** Cache Redis 7.<br>**Descartada:** Replicas PostgreSQL (viola R-03 VPS unico y anade *replication lag*). | **$p95$ reducido de $579.5\text{ ms}$ a $92.9\text{ ms}$ (-84%)**.<br>Utilizacion $\rho$ cae de $72.5\%$ a $15.5\%$. |
-| **E4 — Iteracion 2 ADD** | [iteracion-2.md](add/iteracion-2.md) | **Disponibilidad**<br>`[QA-03]` (H, H) | 1. Llamada directa (baseline)<br>2. Reintentos backoff exp.<br>3. Transactional Outbox + Celery | **Elegida:** Outbox Pattern.<br>**Descartada:** Reintentos directos (ventana de 7 min insuficiente para caida de 20 min). | **0 pedidos perdidos ($0.0\%$)** vs 15.5% en baseline.<br>100% transacciones recuperadas en $p95 \le 14.94\text{ min}$. |
-| **E4 — Iteracion 3 ADD** | [add/iteracion-3.md](add/iteracion-3.md) | **Modificabilidad & Seguridad**<br>`[QA-01, QA-02]` | 1. BD por mercado<br>2. Arquitectura de Plugins<br>3. Config-Driven + RLS | **Elegida:** Config-Driven Multitenancy + RLS.<br>**Descartada:** BD por mercado (demanda $>1.8\text{ GB}$ RAM, viola R-03). | **0 archivos del nucleo modificados (-100%)**.<br>Despliegue en $\le 0.25\text{ dias}$. Overhead RLS de apenas $2\%$. |
 
 ### Evidencia Cuantitativa y Resultados de Simulacion
 
