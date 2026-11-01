@@ -1,196 +1,137 @@
-# Iteración 2 de ADD — Disponibilidad [QA-03]
+# Entregable E4: Iteración 2 de ADD — Disponibilidad y Resiliencia en Pagos [QA-03]
 ## San Camilo en Línea 2.0 — `add/iteracion-2.md`
 
-**Responsable:** Kennedy Chirinos Rojas  
+**Responsable:** Kennedy Chirinos Rojas (Integrante 2: ADD y Evidencia Cuantitativa)  
+**Entregable:** E4 (Guía de Laboratorio 08)  
 **Fecha:** 2026-10-31  
-**Laboratorio:** 08 — Attribute-Driven Design
 
 ---
 
 ## 1. Objetivo de la Iteración
 
-Resolver el segundo escenario de calidad crítico del Árbol de Utilidad (`docs/architecture/utilidad/arbol.md`):
+El objetivo de este segundo ciclo de Attribute-Driven Design (ADD) es abordar el atributo de **Disponibilidad y Tolerancia a Fallos** ante la interrupción de servicios externos de terceros, correspondiente al escenario priorizado como crítico en el Árbol de Utilidad (`docs/architecture/utilidad/arbol.md`):
 
-> **[QA-03] Disponibilidad (H,H):** Ante una caída total de la pasarela Yape/Plin durante **20 minutos** en hora pico, el sistema debe garantizar **0 pedidos perdidos** y el **100%** de las transacciones debe procesarse tras el restablecimiento del servicio.
-
-El riesgo T2 del ATAM-lite (Diego) advierte el trade-off: garantizar disponibilidad implica aceptar **consistencia eventual** — el cliente no recibe confirmación en tiempo real, sino dentro de un tiempo máximo tolerable.
-
----
-
-## 2. Contexto Arquitectónico de Entrada
-
-| Elemento | Valor | Fuente |
-|---|---|---|
-| Módulo afectado | Pagos + Worker Celery | workspace.dsl |
-| Riesgo identificado | R2: VPS único como SPOF | atam-lite.md |
-| Trade-off identificado | T2: Outbox vs. confirmación en tiempo real | atam-lite.md |
-| Cola de tareas disponible | Redis 7 + Celery Worker | workspace.dsl |
-| Ventana de falla modelada | 20 min — P(falla) ≈ 15% del tráfico pico | QA-03 / arbol.md |
-| SLA pedidos perdidos | 0 de N | QA-03 |
+> **[QA-03] Disponibilidad (Prioridad: H, H):**  
+> **Estímulo:** Caída total de la pasarela de pagos digitales (Yape / Plin) durante **20 minutos** en horario pico de ventas.  
+> **Artefacto:** Módulo de Pagos (`compPagos`), Circuit Breaker y almacenamiento transaccional PostgreSQL.  
+> **Respuesta:** Aislar el fallo, evitar la degradación de la API HTTP hacia el cliente, registrar los pedidos en estado pendiente y procesar el cobro de forma asíncrona al restablecerse la conectividad.  
+> **Medida de la respuesta:** **0 pedidos perdidos** ($0\%$ de pérdida) y el **$100\%$ de transacciones procesadas** tras la recuperación del servicio en un tiempo $\le 15\text{ minutos}$.
 
 ---
 
-## 3. Evaluación de Tácticas Arquitectónicas
+## 2. Contexto de Arquitectura y Evaluación de Alternativas
 
-### Táctica A — Llamada directa sin resiliencia ❌ BASELINE (viola QA-03)
+Las integraciones con pasarelas de pago externas (Yape/Plin) representan límites de control fuera de la infraestructura del equipo (`System_Ext` en C4). Ante una interrupción prolongada (20 minutos), se analizaron tres tácticas arquitectónicas:
 
-**Descripción:** El módulo Pedidos llama síncronamente a la pasarela Yape/Plin. Si la pasarela no responde, el pedido falla y se pierde.
+```mermaid
+flowchart TD
+    CLI["Cliente confirma pedido"] --> API["API Backend / compPedidos"]
+    API --> DEC{"Táctica de Resiliencia"}
 
-**Resultado de la simulación (`fitness/disponibilidad.py`):**
+    DEC -->|Estrategia A: Baseline| SINC["Llamada Síncrona Directa\n- 15.5% pedidos perdidos\n- Timeout HTTP 504\n- Viola QA-03"]
+    DEC -->|Estrategia B: Reintentos| RETRY["Reintentos con Backoff Exp.\n- Ventana cubierta: 7 min\n- 10.0% pedidos perdidos\n- Viola QA-03"]
+    DEC -->|Estrategia C: Elegida| OUTBOX["Transactional Outbox + Celery\n- Pedido persistido en DB local\n- Worker procesa al reconectar\n- 0 pedidos perdidos (QA-03 Cumplido)"]
 
-| Métrica | Valor |
-|---|---|
-| Pedidos perdidos (N=10,000) | **1,550 (15.50%)** |
-| Recuperados de la ventana de falla | 0.0% |
-| Tiempo p95 de proceso | 2.87 min |
-| Cumple QA-03 (0 perdidos) | **✗ VIOLA** |
-
-**Veredicto:** Inaceptable. Pierde 1 de cada 6.5 pedidos durante una falla de 20 minutos.
-
----
-
-### Táctica B — Reintentos con Backoff Exponencial (evaluada, insuficiente)
-
-**Descripción:** Ante un timeout de Yape/Plin, el módulo reintenta la llamada hasta 3 veces con espera exponencial ($2^i \times 30$ segundos, $i = 1, 2, 3$).
-
-**Análisis matemático de la ventana cubierta:**
-
-$$t_{\text{max\_cubierto}} = \sum_{i=1}^{3} 2^i \times 30 = 60 + 120 + 240 = 420 \text{ s} = 7 \text{ min}$$
-
-Un pedido que llegue cuando quedan más de 7 minutos de falla **no puede ser recuperado** con solo 3 reintentos. Dado que la caída dura 20 minutos, un pedido que llega al inicio de la ventana tiene tiempo residual de hasta 20 minutos — muy superior a los 7 minutos cubiertos.
-
-**Resultado de la simulación (`fitness/disponibilidad.py`):**
-
-| Métrica | Valor |
-|---|---|
-| Pedidos perdidos (N=10,000) | **1,000 (10.00%)** |
-| Recuperados de la ventana de falla | 34.3% |
-| Tiempo p95 de proceso | 3.60 min |
-| Cumple QA-03 (0 perdidos) | **✗ VIOLA** |
-
-**Veredicto:** Mejora el baseline un 35.5%, pero sigue perdiendo 1,000 pedidos. Insuficiente para QA-03.
-
----
-
-### Táctica C — Outbox Pattern + Worker Asíncrono ✅ ELEGIDA
-
-**Descripción:** El módulo Pedidos persiste el pedido inmediatamente en PostgreSQL con estado `PENDIENTE_PAGO` y registra la transacción pendiente en una tabla `outbox`. Un worker Celery monitorea la tabla y reintenta el cobro al detectar que el proveedor está disponible. Este patrón es el trade-off T2 documentado por Diego en `atam-lite.md`.
-
-**Garantía formal:** El pedido **siempre** se persiste en la base de datos antes de intentar el cobro. La falla del proveedor de pagos **nunca** impide la persistencia del pedido.
-
-**Modelo matemático — Probabilidad de pérdida con Outbox:**
-
-Sea $F$ = evento "falla del proveedor durante la solicitud":
-
-$$P(\text{pedido perdido} \mid \text{Outbox}) = P(\text{falla de PostgreSQL}) \approx 0$$
-
-(PostgreSQL en el mismo VPS tiene disponibilidad ≥ 99.9% — R2 documenta el riesgo residual de SPOF del VPS como aceptado en el MVP.)
-
-**Resultado de la simulación (`fitness/disponibilidad.py`, N=10,000, semilla=2028):**
-
-| Métrica | Valor |
-|---|---|
-| Pedidos perdidos | **0 (0.00%)** |
-| Recuperados de la ventana de falla | **100.0%** |
-| Tiempo medio de proceso | 3.03 min |
-| Tiempo p95 de proceso | **14.94 min** |
-| Cumple QA-03 (0 perdidos) | **✓ CUMPLE** |
-| Cumple tiempo ≤ 15 min | **✓ CUMPLE** |
-
----
-
-## 4. Tabla Comparativa de Trade-offs
-
-| Criterio | A — Sin resiliencia | B — Reintentos | C — Outbox (elegida) |
-|---|---|---|---|
-| Pedidos perdidos / 10,000 | **1,550** | **1,000** | **0** |
-| Tasa de pérdida | 15.50% | 10.00% | **0.00%** |
-| Recuperación de fallas | 0.0% | 34.3% | **100.0%** |
-| Tiempo p95 confirmación | 2.87 min | 3.60 min | **14.94 min** |
-| Confirmación en tiempo real | ✅ Sí | ✅ Sí | ⚠️ No (eventual) |
-| Complejidad de implementación | Baja | Baja | Media |
-| Cumple QA-03 | ❌ | ❌ | **✅** |
-| Infraestructura adicional | Ninguna | Ninguna | Celery+Redis (ya existe) |
-
-**Análisis del trade-off T2 (atam-lite.md):** El Outbox Pattern introduce consistencia eventual — el cliente espera hasta 14.94 min (p95) para recibir la confirmación final del pago. Este es el costo explícito de garantizar 0 pedidos perdidos. Para el contexto del Mercado San Camilo (compras de productos de mercado, no transacciones financieras críticas), este tiempo es aceptable y está dentro del SLA de ≤ 15 min.
-
----
-
-## 5. Evidencia Cuantitativa — Simulación Monte Carlo
-
-### Parámetros del modelo
-
-| Parámetro | Valor | Justificación |
-|---|---|---|
-| $N$ (pedidos simulados) | 10,000 | Convergencia estadística (error estándar < 0.5%) |
-| $P(\text{falla})$ | 0.15 | Caída 20 min en hora pico de 2h → 15% del tráfico |
-| Duración máx. falla | 20 min | QA-03 / arbol.md |
-| $t_{\text{worker}}$ Outbox | $\text{Uniforme}(0.1, 3.0)$ min | Celery poll interval = 10 s |
-| Semilla aleatoria | 2026, 2027, 2028 | Una por estrategia — reproducible |
-
-### Resultados numéricos de la simulación
-
-```
-═════════════════════════════════════════════════════════════════
-  TABLA COMPARATIVA — fitness/disponibilidad.py
-─────────────────────────────────────────────────────────────────
-  Estrategia                          Perdidos  p95 [min]   QA-03
-  ─────────────────────────────────── ──────── ────────── ───────
-  A — Sin resiliencia (baseline)         1,550       2.87       ✗
-  B — Reintentos backoff exp.            1,000       3.60       ✗
-  C — Outbox Pattern (elegida)               0      14.94       ✓
-═════════════════════════════════════════════════════════════════
+    classDef elegida fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef desc fill:#FFEBEE,stroke:#C62828,color:#000
+    classDef base fill:#FFF3E0,stroke:#E65100,color:#000
+    class OUTBOX elegida
+    class RETRY desc
+    class SINC base
 ```
 
-El gráfico generado se encuentra en [`fitness/disponibilidad_resultados.png`](../fitness/disponibilidad_resultados.png).
+### Alternativa A — Llamada Directa Síncrona (Baseline / Sin Resiliencia) ❌
+- **Descripción:** El cliente envía la solicitud; el hilo de la API llama inmediatamente a la pasarela vía HTTPS.
+- **Comportamiento en falla:** Al estar caído Yape/Plin, la conexión agota el timeout ($30\text{ s}$) y retorna HTTP `504 Gateway Timeout`. El pedido no se guarda en base de datos.
+- **Resultado cuantitativo:** Durante una ventana de caída del $15\%$ del tráfico, se pierde el **$15.5\%$ de los pedidos** de la jornada.
 
 ---
 
-## 6. Componentes Arquitectónicos Instanciados
+### Alternativa B — Reintentos en Línea con Backoff Exponencial ❌ DESCARTE JUSTIFICADO
+- **Descripción:** La API reintenta la llamada hasta 3 veces con pausas crecientes ($2^i \times 30\text{ s}$).
+- **Justificación técnica del descarte:**
+  1. **Ventana de cobertura matemáticamente insuficiente:**
+     $$t_{\text{cobertura}} = 60\text{ s} + 120\text{ s} + 240\text{ s} = 420\text{ s} = 7\text{ minutos}$$
+     Dado que el estímulo establece una caída de **20 minutos**, cualquier pedido que llegue en los primeros 13 minutos de la falla agotará sus reintentos mientras el proveedor sigue caído, provocando su pérdida definitiva.
+  2. **Agotamiento de sockets y *Thread Starvation*:** Mantener peticiones abiertas esperando reintentos bloquea los 4 workers de Gunicorn (analizados en la Iteración 1), colapsando el catálogo y la navegación para el resto de usuarios.
+
+---
+
+### Alternativa C — Patrón Transaccional Outbox + Worker Asíncrono ✅ TÁCTICA ELEGIDA
+- **Descripción:** Táctica de desacoplamiento y persistencia garantizada.
+  1. Al confirmar el pedido, el backend abre una transacción ACID local en PostgreSQL.
+  2. Inserta el registro del pedido con estado `PENDIENTE_PAGO` y simultáneamente escribe un mensaje en la tabla `outbox`.
+  3. Cierra la transacción y responde inmediatamente al cliente con código `202 Accepted` indicando que su pedido está en cola de procesamiento.
+  4. Un worker Celery en segundo plano consulta la tabla `outbox`, verifica el estado del circuito (*Circuit Breaker*) e intenta liquidar los pagos pendientes cuando la pasarela reanuda su servicio.
+
+---
+
+## 3. Evidencia Cuantitativa: Simulación Monte Carlo
+
+Se implementó un simulador estocástico en `fitness/disponibilidad.py` con una muestra de **$N = 10\,000$ pedidos** sometidos a una interrupción del proveedor de $20\text{ minutos}$ ($P(\text{falla}) = 0.15$):
+
+### Tabla Comparativa de Resultados de Simulación
+
+| Estrategia de Resiliencia | Pedidos en Ventana de Falla | Pedidos Perdidos | % Pérdida | Tasa de Recuperación | Tiempo $p95$ Confirmación | Cumplimiento [QA-03] |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **A: Sin resiliencia (Directa)** | $1\,550$ | $1\,550$ | $15.50\%$ | $0.0\%$ | $2.87\text{ min}$ | ✗ **VIOLA** (1,550 perdidos) |
+| **B: Reintentos backoff exp.** | $1\,521$ | $1\,000$ | $10.00\%$ | $34.3\%$ | $3.60\text{ min}$ | ✗ **VIOLA** (1,000 perdidos) |
+| **C: Outbox Pattern (Elegida)** | $1\,520$ | **$0$** | **$0.00\%$** | **$100.0\%$** | **$14.94\text{ min}$** | **✓ CUMPLE ($0$ pedidos perdidos)** |
+
+### Gráfico de Evidencia Cuantitativa
+
+A continuación se muestra el gráfico generado por `fitness/disponibilidad.py`:
+
+![Disponibilidad Antes vs Despues](../fitness/disponibilidad_resultados.png)
+
+---
+
+## 4. Análisis de Compromisos (*Trade-offs*)
+
+La selección del Outbox Pattern frente a la llamada síncrona implica el **Trade-off T2** documentado en `docs/architecture/atam-lite.md`:
 
 ```
-Módulo Pagos (compPagos — workspace.dsl)
-  └─ ServicioPagos.registrar_pago_pendiente()
-       1. BEGIN TRANSACTION
-       2. INSERT INTO pedidos (estado='PENDIENTE_PAGO', ...)  → persiste el pedido
-       3. INSERT INTO outbox (tipo='COBRO_YAPE', payload, creado_en)
-       4. COMMIT
-       5. Retornar HTTP 202 Accepted + pedido_id al cliente
-
-Worker Celery (container worker — workspace.dsl)
-  └─ ProcesarOutboxTask (poll cada 10 s)
-       1. SELECT * FROM outbox WHERE procesado=FALSE ORDER BY creado_en
-       2. Para cada registro:
-          a. Intentar cobro en Yape/Plin (YapeAdapter.cobrar())
-          b. Si éxito: UPDATE pedidos SET estado='PAGADO'; UPDATE outbox SET procesado=TRUE
-          c. Si falla: exponential backoff — próximo intento en 2^n × 10 s
-       3. Notificar al comerciante vía WhatsApp (enqueue en Cola Redis)
-
-Cola Redis 7 (container cola — workspace.dsl)
-  └─ Queue: outbox_procesamiento  (prioridad alta)
-  └─ Queue: notificaciones_whatsapp
+          ┌────────────────────────────────────────────────────────┐
+          │     TRADE-OFF T2: DISPONIBILIDAD vs. CONSISTENCIA      │
+          ├────────────────────────────────────────────────────────┤
+          │  GANANCIA (Disponibilidad):                            │
+          │  • 0 pedidos perdidos ante caídas de hasta 20 min.     │
+          │  • 100% transacciones recuperadas automáticamente.     │
+          │  • Liberación inmediata de workers HTTP (sin bloqueos).│
+          ├────────────────────────────────────────────────────────┤
+          │  COSTO (Consistencia / UX):                            │
+          │  • Transición a consistencia eventual.                 │
+          │  • El cliente no recibe comprobante instantáneo;       │
+          │    el tiempo p95 de confirmación sube a 14.94 min.     │
+          │  • Requiere notificación asíncrona vía WhatsApp/PWA.   │
+          └────────────────────────────────────────────────────────┘
 ```
 
----
-
-## 7. Trade-offs Documentados
-
-| Ganancia | Costo |
-|---|---|
-| 0 pedidos perdidos — QA-03 cumplido | Confirmación diferida (consistencia eventual) |
-| Resiliencia ante fallas de 20 min | Cliente espera p95 = 14.94 min para confirmación |
-| Usa infraestructura ya existente (Celery + Redis) | Implementar tabla `outbox` y task Celery |
-| Auditoría completa de todos los intentos de cobro | Mayor complejidad de monitoreo del worker |
+### Aceptabilidad del Trade-off en el Contexto de San Camilo
+En el comercio tradicional del Mercado San Camilo, los pedidos para recojo o delivery tienen ventanas de preparación de 30 a 45 minutos. Un tiempo de confirmación diferido de hasta $14.94\text{ minutos}$ en el percentil 95 durante contingencias severas del sistema de pago es perfectamente admisible para comerciantes y clientes, mientras que perder un pedido genera reclamos directos y desconfianza en la plataforma.
 
 ---
 
-## 8. Conexión con otros Entregables
+## 5. Componentes e Integración en la Arquitectura
 
-| Entregable | Vinculación |
-|---|---|
-| `docs/architecture/utilidad/arbol.md` (Diego E1) | QA-03 (H,H) es el driver de esta iteración |
-| `docs/architecture/atam-lite.md` (Diego E3) | T2 documenta el trade-off Outbox vs. tiempo real |
-| `fitness/disponibilidad.py` (Kennedy) | Script que genera la evidencia Monte Carlo |
-| `fitness/disponibilidad_resultados.png` (Kennedy) | Gráfico Antes vs. Después |
-| `add/iteracion-1.md` (Kennedy E2) | Iteración anterior — QA-01 Modificabilidad |
-| `add/iteracion-3.md` (Kennedy E4) | Continúa con QA-04 Rendimiento |
+```
+[Cliente PWA] ──(1: POST /pedidos)──► [ServicioPedidos (API)]
+                                              │
+                                              ▼ (2: Transacción ACID local)
+                                     [PostgreSQL: Pedido + Outbox]
+                                              │
+                    ┌─────────────────────────┴────────────────────────┐
+                    │ (Worker Celery lee outbox periódicamente)         │
+                    ▼                                                  ▼
+         [Circuit Breaker ABIERTO]                           [Circuit Breaker CERRADO]
+         (Espera pasarela caída)                             (Conexión recuperada)
+                    │                                                  │
+                    └─────────────────────────► [YapeAdapter.cobrar()] ┘
+                                                       │
+                                                       ▼
+                                            [WhatsApp Notificación]
+```
+
+1. **Tabla `outbox` en PostgreSQL:** Almacena `id`, `pedido_id`, `monto`, `payload_json`, `reintentos` y `estado`.
+2. **Worker Celery (`workspace.dsl`):** Ejecuta la tarea `procesar_outbox_pendientes` cada 15 segundos con política de Circuit Breaker.
+3. **Notificación final:** Al confirmarse la transacción diferida, se encola la notificación a WhatsApp (`Módulo Notificaciones`) informando al cliente y al puestero.

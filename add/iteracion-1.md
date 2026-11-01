@@ -1,187 +1,157 @@
-# Iteración 1 de ADD — Modificabilidad [QA-01]
+# Entregable E2: Iteración 1 de ADD — Rendimiento en Catálogo [QA-04]
 ## San Camilo en Línea 2.0 — `add/iteracion-1.md`
 
-**Responsable:** Kennedy Chirinos Rojas  
+**Responsable:** Kennedy Chirinos Rojas (Integrante 2: ADD y Evidencia Cuantitativa)  
+**Entregable:** E2 (Guía de Laboratorio 08)  
 **Fecha:** 2026-10-31  
-**Laboratorio:** 08 — Attribute-Driven Design
 
 ---
 
 ## 1. Objetivo de la Iteración
 
-Resolver el escenario de calidad crítico de mayor prioridad en el Árbol de Utilidad elaborado por Diego (`docs/architecture/utilidad/arbol.md`):
+El objetivo de esta primera iteración de Attribute-Driven Design (ADD 3.0) es abordar el **escenario de calidad crítico de rendimiento** identificado en el Árbol de Utilidad elaborado por Diego (`docs/architecture/utilidad/arbol.md`):
 
-> **[QA-01] Modificabilidad (H,H):** Ante una solicitud de incorporar el Mercado Altiplano con sus propias reglas de comisión, el equipo de administración debe poder desplegar la nueva entidad de mercado, catálogo y tarifas de delivery **en ≤ 1 día sin modificar el código fuente del núcleo**.
+> **[QA-04] Rendimiento (Prioridad: H, M):**  
+> **Estímulo:** Ráfaga concurrente de $20\text{ req/s}$ buscando ofertas en el catálogo general entre los tres mercados (San Camilo, Altiplano y Río Seco) durante campañas de festividades o fines de semana.  
+> **Artefacto:** API Monolito Modular (`compCatalogo`) y capa de persistencia/almacenamiento.  
+> **Respuesta:** Procesar y responder las solicitudes de lectura de catálogo sin saturar los recursos del servidor.  
+> **Medida de la respuesta:** Tiempo de respuesta en el percentil 95 ($p95$) $\le 1.5\text{ segundos}$ ($1\,500\text{ ms}$).
 
-La arquitectura actual (Monolito Modular, `ADR-001`) fue diseñada para un único mercado (San Camilo). La expansión a tres mercados (Altiplano y Río Seco) requiere una decisión arquitectónica explícita sobre cómo manejar la variabilidad entre tenants sin violar los límites de los módulos existentes.
-
----
-
-## 2. Contexto Arquitectónico de Entrada
-
-| Elemento | Valor | Fuente |
-|---|---|---|
-| Estilo arquitectónico | Monolito Modular (Python/Django) | ADR-001 |
-| Stack de persistencia | PostgreSQL 16 | ADR-002 |
-| Infraestructura | VPS único — Docker Compose | R-03 |
-| Sensibilidad identificada | S2: aislamiento depende de `mercado_id` en JWT | atam-lite.md |
-| Trade-off identificado | T1: caché Redis vs. frescura de stock | atam-lite.md |
-| Restricción de plazo | MVP en 1 mes, equipo de 3 devs | R-01, R-02 |
-| Módulos afectados | Catálogo, Pedidos, Pagos, Notificaciones, Entregas | workspace.dsl |
+### Vinculación con los Drivers Arquitectónicos y ATAM-lite
+- **Driver de carga:** Expansión multitenant a 3 mercados simultáneos, totalizando $20\text{ req/s}$.
+- **Punto de sensibilidad S1 (`docs/architecture/atam-lite.md`):** La latencia $p95 \le 1.5\text{ s}$ depende críticamente de sostener una tasa de aciertos (*Hit Rate*) en caché superior al $15\%$.
+- **Punto de trade-off T1 (`docs/architecture/atam-lite.md`):** *Caché vs. Frescura del stock*. Almacenar ofertas en memoria reduce drásticamente la latencia, pero introduce una ventana de consistencia eventual de stock de hasta $30\text{ s}$.
+- **Restricción R-03 (`docs/architecture/drivers.md`):** Presupuesto reducido; la plataforma debe operar íntegramente sobre un único servidor virtual privado (VPS) económico bajo Docker Compose.
 
 ---
 
-## 3. Evaluación de Tácticas Arquitectónicas
+## 2. Contexto Arquitectónico y Modelo Matemático de Colas ($M/M/c$)
 
-Se evaluaron tres tácticas para habilitar la incorporación de nuevos mercados sin modificar el núcleo:
-
-### Táctica 1 — Config-Driven Multitenancy con tabla `mercados` ✅ ELEGIDA
-
-**Descripción:** Añadir una entidad `Mercado` en la base de datos con atributos configurables (nombre, comisión, tarifas de delivery, reglas de horario). El `mercado_id` se inyecta en cada solicitud vía JWT y se propaga hacia PostgreSQL mediante Row-Level Security (RLS) para filtrar automáticamente los datos de cada tenant.
-
-**Cambios arquitectónicos necesarios:**
-- Nueva tabla `mercados` con columnas: `id`, `nombre`, `comision_pct`, `tarifas_delivery` (JSONB), `activo`.
-- Middleware Django que extrae `mercado_id` del JWT y ejecuta `SET app.current_mercado_id`.
-- Políticas RLS en tablas `productos`, `pedidos`, `pagos`.
-- **0 cambios** en los módulos de negocio (Catálogo, Pedidos, Pagos).
-
-**Módulos tocados para agregar un nuevo mercado:**
-
-| Artefacto | Acción | ¿Modifica código fuente núcleo? |
-|---|---|---|
-| `migrations/0010_add_mercado.py` | Migración nueva | No — nueva migración |
-| `INSERT INTO mercados (...)` | Inserción de datos | No — solo datos |
-| JWT issuer config | Ajuste de configuración | No — archivo `.env` |
-| RLS policy (una vez creada) | Sin cambio posterior | — |
-
-**Costo estimado:** 0.5 días-persona para el primer mercado; 0.1 días-persona para el segundo en adelante.  
-**Cumplimiento QA-01:** ✅ ≤ 1 día sin tocar código fuente del núcleo.
-
----
-
-### Táctica 2 — Módulos de Plugin por Mercado (evaluada)
-
-**Descripción:** Cada mercado se implementa como un módulo Python independiente con sus propias reglas de negocio, que se carga dinámicamente al iniciar la aplicación mediante un sistema de plugins (similar a `django-plugins` o `pluggy`).
-
-**Análisis:**
-- Permite máximo aislamiento de reglas por mercado.
-- Requiere definir e implementar un sistema de puntos de extensión (hooks) en cada módulo: Catálogo, Pedidos, Pagos.
-- Para 3 mercados con reglas simples (solo tarifas y comisiones diferentes), el overhead de implementar el sistema de plugins supera el beneficio en el plazo del MVP.
-
-**Costo estimado:** 5–7 días-persona para implementar la infraestructura de plugins.  
-**Cumplimiento QA-01:** ⚠️ Viable a largo plazo, pero excede el plazo para el MVP.
-
----
-
-### Táctica 3 — Base de Datos Independiente por Mercado ❌ DESCARTADA
-
-**Descripción:** Cada mercado opera sobre su propia instancia de PostgreSQL, garantizando aislamiento físico total de los datos.
-
-**Razones de descarte (argumentadas técnica y arquitectónicamente):**
-
-1. **Violación directa de R-03 (Presupuesto):** El VPS único de bajo costo tiene recursos limitados de RAM y CPU. Tres instancias PostgreSQL 16 consumirían un mínimo de 600 MB de RAM base cada una (shared_buffers mínimos), lo que suma 1.8 GB solo para las bases de datos, dejando recursos insuficientes para la API, Redis y Celery.
-
-2. **Violación de R-01 (Plazo) y R-02 (Equipo):** Gestionar tres pipelines de migración independientes (`python manage.py migrate --database=altiplano`) requiere configurar `DATABASE_ROUTERS` en Django, mantener 3 esquemas de migración sincronizados y triplicar los scripts de backup — inviable para un equipo de 3 personas en 1 mes.
-
-3. **Complejidad operativa desproporcionada:** Consultas que agreguen datos de los 3 mercados (reportes del administrador) requerirían joins entre bases de datos distintas, lo que en PostgreSQL necesita extensiones como `postgres_fdw` (Foreign Data Wrappers), agregando una dependencia de infraestructura no justificada para el MVP.
-
-4. **Evidencia del ATAM-lite (Diego):** El análisis NR1 confirma que el Monolito Modular con 4 workers opera a 35% de utilización de CPU, demostrando que el aislamiento físico de DB no es necesario para la carga proyectada. La respuesta fundamentada del equipo al evaluador adversario en `atam-lite.md` documenta que RLS introduce únicamente un sobrecosto de rendimiento del **2%** — estadísticamente insignificante.
-
-**Conclusión del descarte:** La táctica de base de datos por mercado viola R-01, R-02 y R-03 simultáneamente sin aportar beneficios medibles para la escala actual. Queda descartada con posibilidad de reevaluación únicamente si el número de mercados supera 10 y los requisitos regulatorios de aislamiento físico se vuelven mandatorios.
-
----
-
-## 4. Decisión Arquitectónica
-
-**Táctica seleccionada:** Config-Driven Multitenancy con tabla `mercados` + Row-Level Security en PostgreSQL.
-
-**Justificación cuantificada:**
-
-| Criterio | Táctica 1 (elegida) | Táctica 2 (plugins) | Táctica 3 (descartada) |
-|---|---|---|---|
-| Días-persona para nuevo mercado | **0.5** | 5–7 (infra) + 0.5 | N/A — excede capacidad |
-| Módulos del núcleo modificados | **0** | 3–5 (hooks) | 0 (pero 3 DB configs) |
-| Cumple R-03 (VPS único) | **✅** | ✅ | ❌ |
-| Cumple R-01 (1 mes) | **✅** | ⚠️ | ❌ |
-| Cumple QA-01 (≤ 1 día) | **✅** | ⚠️ | ❌ |
-| Riesgo R1 (RLS defectuosa) | Mitigado por FF-04 | Bajo (aislamiento código) | Ninguno (aislamiento físico) |
-
----
-
-## 5. Evidencia Cuantitativa — Modificabilidad
-
-La táctica elegida garantiza que incorporar un nuevo mercado toca **0 líneas de código fuente del núcleo**. La evidencia se mide contando los artefactos modificados:
-
-### Baseline — Sin arquitectura Multitenant (estado inicial)
-
-Con el sistema original de un solo mercado, incorporar "San Camilo II" requería:
-
-| Artefacto a modificar | Tipo de cambio | Impacto |
-|---|---|---|
-| `views.py` en Catálogo | Condicional `if mercado == 'altiplano'` | Modifica código núcleo |
-| `serializers.py` en Pedidos | Reglas de tarifa hardcodeadas | Modifica código núcleo |
-| `services.py` en Pagos | Comisión diferente por if/elif | Modifica código núcleo |
-| `settings.py` | Nueva constante de configuración | Modifica configuración |
-
-**Total artefactos del núcleo modificados:** 3 archivos de código + tests asociados.
-
-### Después — Con Config-Driven Multitenancy
-
-| Artefacto a modificar | Tipo de cambio | ¿Toca el núcleo? |
-|---|---|---|
-| `INSERT INTO mercados VALUES (...)` | Solo datos en BD | ❌ No |
-| `0010_add_mercado_altiplano.py` | Migración nueva | ❌ No |
-| `.env` (JWT config) | Variable de entorno | ❌ No |
-
-**Total artefactos del núcleo modificados: 0.**
-
-### Métricas de acoplamiento — antes vs. después
-
-| Métrica | Antes | Después | Delta |
-|---|---|---|---|
-| Archivos del núcleo modificados por mercado | 3 | **0** | **-100%** |
-| Tiempo estimado por mercado nuevo | 2–3 días-persona | **0.5 días-persona** | **-80%** |
-| Riesgo de regresión en módulos existentes | Alto (editar código) | **Ninguno** (solo datos) | **Eliminado** |
-| Cumplimiento QA-01 (≤ 1 día) | ❌ No cumple | **✅ Cumple** | — |
-
----
-
-## 6. Componentes Arquitectónicos Instanciados
+El subsistema de atención de solicitudes HTTP del monolito modular se modela formalmente como una red de colas $M/M/c$ (o $M/G/c$ con varianza unitaria $C_v^2 \approx 1$):
 
 ```
-Módulo Catálogo
-  └─ Middleware: TenantMiddleware
-       • Extrae mercado_id del JWT (claim: "mercado_id")
-       • Ejecuta: SET app.current_mercado_id = %s
-       • Se aplica a todas las solicitudes autenticadas
-
-Base de Datos PostgreSQL 16
-  └─ Tabla: mercados
-       • id UUID PRIMARY KEY
-       • nombre VARCHAR(100)
-       • comision_pct DECIMAL(5,2)
-       • tarifas_delivery JSONB
-       • activo BOOLEAN
-  └─ RLS activado en: productos, pedidos, pagos, entregas
-       • POLICY: USING (mercado_id = current_setting('app.current_mercado_id')::uuid)
+       Tráfico entrante (Poisson)             Servidores concurrentes
+           λ = 20 req/s                         c = 4 workers Gunicorn
+      ─────────────────────► [ COLA FIFO ] ───┬─► [ Worker 1 ] (μ)
+                                              ├─► [ Worker 2 ] (μ)
+                                              ├─► [ Worker 3 ] (μ)
+                                              └─► [ Worker 4 ] (μ)
 ```
 
+### Parámetros y Fórmulas del Sistema
+- $\lambda = 20.0\text{ req/s}$: Tasa media de solicitudes entrantes al catálogo.
+- $c = 4$: Cantidad de procesos *worker* asignados a Gunicorn en el contenedor `api` (`workspace.dsl`, VPS único).
+- $\mu$: Tasa media de servicio por worker en $\text{req/s}$, donde $\mu = \frac{1\,000}{\mu_s}$ y $\mu_s$ es la latencia de servicio en milisegundos.
+- $\rho = \frac{\lambda}{c \cdot \mu}$: Factor de utilización del grupo de workers. Para estabilidad matemática estricta se exige $\rho < 1.0$.
+
+#### Probabilidad de espera en cola (Fórmula de Erlang C):
+$$C(c, a) = \frac{\dfrac{a^c}{c!\,(1-\rho)}}{\displaystyle\sum_{k=0}^{c-1}\frac{a^k}{k!} + \dfrac{a^c}{c!\,(1-\rho)}} \quad \text{donde } a = \frac{\lambda}{\mu}$$
+
+#### Tiempo medio de espera en cola ($W_q$) y tiempo total en el sistema ($W$):
+$$W_q = \frac{C(c, a)}{c\,\mu - \lambda} \qquad W = W_q + \frac{1}{\mu}$$
+
 ---
 
-## 7. Trade-offs Identificados
+## 3. Evaluación de Conceptos y Tácticas Arquitectónicas
 
-- **Ganancia:** Modificabilidad extrema — 0 cambios en código fuente para incorporar nuevos mercados.
-- **Costo:** La correcta extracción del `mercado_id` en el middleware es crítica (S2 — atam-lite.md). Una política RLS omitida expone los datos entre mercados (R1 — riesgo crítico).
-- **Mitigación:** Fitness Function de seguridad `FF-04` (documentada por Nagin en CI): prueba automatizada que verifica que una consulta con token de Mercado A devuelve **0 filas** del Mercado B.
+Se plantearon y evaluaron tres alternativas arquitectónicas para resolver el cuello de botella del catálogo:
+
+```mermaid
+flowchart TD
+    REQ["Petición Catálogo (20 req/s)"] --> DEC{"Táctica Evaluada"}
+    DEC -->|Táctica 1: Baseline| PG["PostgreSQL Directo (μ=145ms)\nUtilización ρ=0.725\nSin margen ante picos"]
+    DEC -->|Táctica 2: Descartada| REP["Replicación Lectura PostgreSQL\nViola R-03 (VPS Único)\nLag de replicación asíncrono"]
+    DEC -->|Táctica 3: Elegida| REDIS["Caché Redis TTL=30s\nHit Rate 82%, μ_ef=31ms\nUtilización ρ=0.155 (p95=92.9ms)"]
+
+    classDef elegida fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef desc fill:#FFEBEE,stroke:#C62828,color:#000
+    classDef base fill:#FFF3E0,stroke:#E65100,color:#000
+    class REDIS elegida
+    class REP desc
+    class PG base
+```
+
+### Táctica 1 — Consulta Directa a Base de Datos Relacional (Línea Base / Sin Caché)
+* **Concepto:** Cada una de las 20 peticiones por segundo ejecuta consultas SQL dinámicas con filtrado RLS (`WHERE mercado_id = ...`) sobre PostgreSQL 16.
+* **Latencia estimada de servicio ($\mu_s$):** $145.0\text{ ms/req}$ (parsing SQL, resolución de vistas relacionales, index scan y serialización JSON).
+* **Tasa de servicio individual:** $\mu = \frac{1\,000}{145} \approx 6.90\text{ req/s}$ por worker.
+* **Capacidad máxima del cluster:** $c \cdot \mu = 4 \times 6.90 = 27.6\text{ req/s}$.
+* **Factor de utilización:** $\rho = \frac{20}{27.6} = 0.725$ ($72.5\%$ de CPU sostenida en los 4 workers).
+* **Evaluación:** Aunque matemáticamente es estable bajo régimen estacionario ($\rho < 1$), ante una pequeña variación de demanda ($\lambda \ge 28\text{ req/s}$) la cola diverge ($W_q \to \infty$). No otorga margen de resiliencia.
 
 ---
 
-## 8. Conexión con otros Entregables
+### Táctica 2 — Replicación de Lectura en PostgreSQL (Read Replicas) ❌ DESCARTE JUSTIFICADO
+* **Concepto:** Configurar una réplica asíncrona de PostgreSQL para derivar el tráfico de solo lectura (`SELECT`) del catálogo fuera del nodo primario transaccional.
+* **Justificación técnica y arquitectónica del descarte:**
+  1. **Violación flagrante de la restricción de infraestructura R-03:** En `docs/architecture/drivers.md` y `ADR-001`, se estipuló que el MVP opera sobre un único servidor VPS de bajo costo. Desplegar una segunda instancia de PostgreSQL o contratar un servicio administrado con réplicas excede el presupuesto y duplica el consumo de memoria RAM en el contenedor local (PostgreSQL exige un piso de $256\text{ MB}$ para `shared_buffers` y procesos de replicación WAL).
+  2. **Inconsistencia temporal por retraso de replicación (*Replication Lag*):** Al tratarse de un catálogo multipuesto con actualización de inventario por parte de comerciantes en tiempo real, el desfase asíncrono entre el nodo primario y la réplica generaría falsos positivos de stock disponible (compras sobre productos agotados).
+  3. **Innecesariedad operativa (*Patternitis*):** Los cálculos cuantitativos revelan que el cuello de botella no radica en la capacidad de cálculo del motor relacional, sino en la repetición de consultas idénticas de catálogos estáticos que pueden absorberse completamente en memoria RAM con latencia sub-milisegundo.
 
-| Entregable | Vinculación |
-|---|---|
-| `docs/architecture/utilidad/arbol.md` (Diego E1) | QA-01 (H,H) es el driver de esta iteración |
-| `docs/architecture/atam-lite.md` (Diego E3) | S2 y R1 documentan el riesgo de RLS |
-| `docs/design/patrones/metricas.md` (Diego E6) | Metodología de medición de artefactos modificados |
-| `.github/workflows/fitness.yml` (Nagin E5) | FF-04 valida el aislamiento RLS en CI |
-| `add/iteracion-2.md` (Kennedy E4) | Continúa con QA-03 Disponibilidad |
+---
+
+### Táctica 3 — Caché en Memoria con Redis y Expiración TTL = 30 s ✅ TÁCTICA ELEGIDA
+* **Concepto:** Táctica de gestión de recursos *(Manage Demand)* del catálogo. Interponer un contenedor Redis 7 (ya modelado en `c4/workspace.dsl`) como proxy de almacenamiento temporal para las consultas del catálogo.
+* **Estrategia de claves multitenant:** `catalogo:{mercado_id}:{categoria}:{pagina}` con tiempo de expiración $TTL = 30\text{ segundos}$.
+* **Comportamiento cuantitativo:**
+  - **Hit Rate proyectado ($H$):** $82\%$ de aciertos para lecturas en horas pico.
+  - **Latencia de acierto (*Cache Hit*):** $6.0\text{ ms}$.
+  - **Latencia de fallo (*Cache Miss*):** $145.0\text{ ms}$ (acceso a PostgreSQL + escritura en Redis).
+  - **Tiempo medio de servicio efectivo ($\mu_{\text{ef}}$):**
+    $$\mu_{\text{ef}} = (0.82 \times 6.0\text{ ms}) + (0.18 \times 145.0\text{ ms}) = 4.92 + 26.1 = 31.02\text{ ms}$$
+  - **Nueva tasa de servicio por worker:** $\mu = \frac{1\,000}{31.02} \approx 32.24\text{ req/s}$.
+  - **Factor de utilización:** $\rho = \frac{20}{4 \times 32.24} = 0.155$ ($15.5\%$).
+
+---
+
+## 4. Evidencia Cuantitativa (Antes vs. Después)
+
+La experimentación fue ejecutada de forma reproducible mediante el script matemático `fitness/rendimiento.py` implementando simulación Monte Carlo de eventos discretos con $N = 50\,000$ solicitudes concurrentes y semilla fija (`seed = 42`).
+
+### Tabla Comparativa de Resultados Numéricos
+
+| Métrica de Rendimiento | ANTES (Sin Caché / BD Directa) | DESPUÉS (Con Redis TTL = 30 s) | Impacto / Delta Relativo | Cumplimiento [QA-04] |
+|---|:---:|:---:|:---:|:---:|
+| **Tasa media de servicio ($\mu_s$)** | $145.0\text{ ms}$ | $31.0\text{ ms}$ | **-78.6%** | — |
+| **Utilización de workers ($\rho$)** | $0.725\text{ (72.5%)}$ | $0.155\text{ (15.5%)}$ | **-78.6% de carga** | Óptimo ($< 30\%$) |
+| **Prob. de espera en cola $C(c,\rho)$** | $0.4682\text{ (46.8%)}$ | $0.0039\text{ (0.39%)}$ | **-99.2% de bloqueo** | Prácticamente nula |
+| **Tiempo medio en cola ($W_q$)** | $61.7\text{ ms}$ | $0.04\text{ ms}$ | **-99.9%** | Despreciable |
+| **Latencia percentil 50 ($p50$)** | $162.2\text{ ms}$ | $21.5\text{ ms}$ | **-86.7%** | — |
+| **Latencia percentil 90 ($p90$)** | $461.1\text{ ms}$ | $71.4\text{ ms}$ | **-84.5%** | — |
+| **Latencia percentil 95 ($p95$)** | **$579.5\text{ ms}$** | **$92.9\text{ ms}$** | **-84.0% de reducción** | **✓ CUMPLE ($< 1\,500\text{ ms}$)** |
+| **Latencia percentil 99 ($p99$)** | $827.0\text{ ms}$ | $142.2\text{ ms}$ | **-82.8%** | — |
+
+### Gráfico de Evidencia Cuantitativa
+
+A continuación se presenta la evidencia gráfica generada por `fitness/rendimiento.py` y almacenada en el repositorio:
+
+![Rendimiento Antes vs Despues](../fitness/rendimiento_resultados.png)
+
+---
+
+## 5. Análisis de Sensibilidad y Resiliencia ante Fallos de Caché
+
+### Sensibilidad frente al Hit Rate de Redis (Punto S1)
+Para verificar la robustez del sistema frente al punto de sensibilidad **S1** documentado en `atam-lite.md`, se evaluó el comportamiento analítico variando la tasa de aciertos de la caché:
+
+| Hit Rate Redis | Latencia Efectiva ($\mu_{\text{ef}}$) | Utilización ($\rho$) | Latencia $p95$ Proyectada | Estado respecto al SLA ($1\,500\text{ ms}$) |
+|:---:|:---:|:---:|:---:|:---:|
+| **$0\%$ (Caché caída / fría)** | $145.0\text{ ms}$ | $0.725$ | $579.5\text{ ms}$ | **Cumple** (con alto consumo de CPU) |
+| **$15\%$ (Punto crítico S1)** | $124.2\text{ ms}$ | $0.621$ | $358.0\text{ ms}$ | **Cumple holgadamente** |
+| **$50\%$ (Carga moderada)** | $75.5\text{ ms}$ | $0.378$ | $185.0\text{ ms}$ | **Excelente** |
+| **$82\%$ (Hit Rate nominal)** | **$31.0\text{ ms}$** | **$0.155$** | **$92.9\text{ ms}$** | **Margen de seguridad del $93.8\%$** |
+
+### Mitigación del Riesgo R3: Caché Fría post-reinicio
+En caso de que el contenedor Redis se reinicie o caiga, las peticiones impactan directamente en PostgreSQL. Para evitar la degradación del servicio, se incorporaron **índices compuestos B-Tree multitenant**:
+```sql
+CREATE INDEX idx_productos_mercado_estado_cat 
+ON productos (mercado_id, activo, categoria_id);
+```
+Este índice previene escaneos secuenciales y asegura que, aun con la caché completamente vacía ($Hit\ Rate = 0\%$), el $p95$ no supere los $580\text{ ms}$, blindando el cumplimiento estricto del escenario **[QA-04]**.
+
+---
+
+## 6. Conclusión y Decisiones Derivadas
+1. Se confirma la adopción de **Redis 7 como caché distribuida** para el módulo de Catálogo dentro del monolito modular.
+2. Se formaliza el trade-off **T1**: se asume una ventana máxima de desfase de stock de $30\text{ segundos}$ en lecturas masivas, priorizando el tiempo de respuesta sub-100 ms para clientes concurrentes.
+3. Se vincula esta evidencia técnica con el entregable E6 (ADRs) para registrar la decisión en el repositorio arquitectónico.

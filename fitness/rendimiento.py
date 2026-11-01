@@ -375,3 +375,4 @@ def _generar_grafico(
 
 if __name__ == "__main__":
     main()
+

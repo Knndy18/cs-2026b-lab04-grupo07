@@ -377,3 +377,4 @@ def _generar_grafico(resultados: list[ResumenSimulacion]) -> None:
 
 if __name__ == "__main__":
     main()
+

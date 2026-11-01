@@ -307,3 +307,37 @@ python -m pylint.pyreverse.main --source-roots src -o puml -p pedidos_ia src/ped
 | E7: Diagramas PlantUML (State, Observer) y pruebas (`test_patrones.py`) | Nagin | Completado |
 | E7-IA: Diagrama PlantUML y pyreverse de la Capa de IA (`ia-patrones.puml`) | Kennedy | Completado |
 | E8: ADR-005, bitácora de IA y cierre arquitectónico en README | Kennedy | Completado |
+| **Laboratorio 08 — Diseño de Arquitectura (ADD) y Métricas** | | |
+| E1: Árbol de utilidad en Graphviz (`arbol.dot` y `arbol.md`) | Diego | Completado |
+| E2: Iteración 1 de ADD — Rendimiento (`add/iteracion-1.md`) y `fitness/rendimiento.py` | Kennedy | Completado |
+| E3: Informe de evaluación ATAM-lite y matriz de riesgos (`atam-lite.md`) | Diego | Completado |
+| E4: Iteraciones 2 y 3 de ADD — Disponibilidad y Multitenancy (`add/iteracion-2.md`, `add/iteracion-3.md`) | Kennedy | Completado |
+| E5: Fitness functions en CI (`.github/workflows/fitness.yml` e `import-linter`) | Nagin | En proceso |
+| E6: ADRs (006, 007, 008) y actualización C4 en Structurizr (`workspace.dsl`) | Nagin | En proceso |
+| E7: Matriz de riesgos mitigados y bitácora de IA en `bitacora-ia.md` | Diego | En proceso |
+| E8: README consolidado, Pull Requests y etiquetado Git `v0.8-arquitectura` | Equipo | En proceso |
+
+---
+
+## Diseño Guiado por Atributos (ADD) y Evidencia Cuantitativa (Laboratorio 08)
+
+### Entregables del Bloque de ADD y Simulación Cuantitativa (Integrante 2: Kennedy)
+
+| Entregable | Archivo(s) | Responsable | Descripción |
+|---|---|---|---|
+| **E2 — Iteración 1 de ADD** | [add/iteracion-1.md](add/iteracion-1.md) | Kennedy | Diseño de rendimiento [QA-04] ($p95 \le 1.5\text{ s}$ ante 20 req/s), evaluación de 3 tácticas, descarte de réplica de lectura y adopción de caché Redis TTL = 30 s. |
+| **E2 — Simulación de Rendimiento** | [fitness/rendimiento.py](fitness/rendimiento.py) / [Gráfico](fitness/rendimiento_resultados.png) | Kennedy | Modelo matemático de colas $M/M/c$ con simulación discreta ($N=50\,000$). Reducción de $p95$ de $579.5\text{ ms}$ a $92.9\text{ ms}$ (-84%) y utilización $\rho$ de $0.725$ a $0.155$. |
+| **E4 — Iteración 2 de ADD** | [add/iteracion-2.md](add/iteracion-2.md) | Kennedy | Diseño de disponibilidad [QA-03] ante caídas de Yape/Plin por 20 min. Comparativa de llamadas directas, reintentos y Transactional Outbox Pattern con Celery. |
+| **E4 — Simulación de Disponibilidad** | [fitness/disponibilidad.py](fitness/disponibilidad.py) / [Gráfico](fitness/disponibilidad_resultados.png) | Kennedy | Simulación estocástica Monte Carlo ($N=10\,000$). Reducción de pérdida de pedidos de $15.5\%$ a $0.0\%$ ($0$ pedidos perdidos y $100\%$ recuperados en $p95 \le 14.94\text{ min}$). |
+| **E4 — Iteración 3 de ADD** | [add/iteracion-3.md](add/iteracion-3.md) | Kennedy | Diseño de modificabilidad [QA-01] y seguridad multitenant [QA-02]. Config-driven multitenancy con Row-Level Security (RLS) en PostgreSQL, descartando bases de datos separadas. Despliegue en $\le 0.25\text{ días}$ con 0 cambios en el código núcleo. |
+
+### Instrucciones de Ejecución de las Fitness Functions y Simulaciones
+
+```bash
+# 1. Ejecutar la simulación analítica y gráfica de Rendimiento (M/M/c)
+python fitness/rendimiento.py
+
+# 2. Ejecutar la simulación Monte Carlo de Disponibilidad (Outbox Pattern)
+python fitness/disponibilidad.py
+```
+
