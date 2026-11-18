@@ -122,6 +122,36 @@ def mmc_metrics(c: int, lam: float, mu_ms: float) -> dict:
     }
 
 
+def bd_con_indice() -> float:
+    """Latencia media del servicio de catálogo con base indexada."""
+    return DB_MS
+
+
+def con_cache(servicio) -> object:
+    """Decorador simple que combina latencia de caché y base de datos."""
+    base_ms = servicio() if callable(servicio) else float(servicio)
+    cache_ms = CACHE_MS
+    hit_rate = CACHE_HIT_RATE
+    effective_ms = hit_rate * cache_ms + (1 - hit_rate) * base_ms
+
+    def servicio_con_cache() -> float:
+        return effective_ms
+
+    return servicio_con_cache
+
+
+def simular(
+    *,
+    lam: float,
+    workers: int,
+    servicio,
+) -> dict:
+    """API breve usada por las fitness functions de rendimiento."""
+    mu_ms = servicio() if callable(servicio) else float(servicio)
+    metrics = mmc_metrics(workers, lam, mu_ms)
+    return {"p95": metrics["p95_ms"]}
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 3. SIMULACIÓN DE EVENTOS DISCRETOS — p-percentiles exactos
 # ─────────────────────────────────────────────────────────────────────────────
@@ -382,4 +412,3 @@ def _generar_grafico(
 
 if __name__ == "__main__":
     main()
-
