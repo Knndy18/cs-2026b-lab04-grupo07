@@ -1,0 +1,19 @@
+sequenceDiagram
+  autonumber
+  actor Cliente as Cliente (PWA)
+  participant Pedidos as Módulo Pedidos
+  participant Pagos as Módulo Pagos
+  participant Pasarela as Proveedor Pagos (Yape)
+  participant BD as Base de Datos (PostgreSQL)
+  participant Notif as Módulo Notificaciones
+  participant Cola as Cola de Tareas (Redis)
+
+  Cliente->>Pedidos: 1. POST /pedidos/confirmar (referenciaYape)
+  Pedidos->>Pagos: 2. procesarPagoYape(pedidoId, referenciaYape)
+  Pagos->>Pasarela: 3. verificarPago(montoTotal, referenciaYape)
+  Pasarela-->>Pagos: 200 OK (Pago verificado)
+  Pagos-->>Pedidos: Constancia confirmada
+  Pedidos->>BD: 4. guardar(pedidoGlobal) - estado PAGADO
+  Pedidos->>Notif: 5. notificarNuevoPedidoComerciante(puesto, pedidoPuesto)
+  Notif->>Cola: 6. enqueue(mensajeWhatsApp) - asíncrono
+  Pedidos-->>Cliente: 7. 200 OK - resumen confirmado por puesto

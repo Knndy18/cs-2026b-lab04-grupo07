@@ -1,0 +1,26 @@
+C4Component
+  title Diagrama de Componentes - API Backend (San Camilo en Línea)
+
+  Container_Boundary(b_api, "API Backend") {
+    Component(compCatalogo, "Módulo Catálogo", "Django App", "Catálogo por puesto, stock y filtros.")
+    Component(compPedidos, "Módulo Pedidos", "Django App", "Orquestador de pedidos multi-puesto y estados.")
+    Component(compPagos, "Módulo Pagos", "Django App", "Procesamiento y verificación de referencias Yape.")
+    Component(compNotificaciones, "Módulo Notificaciones", "Django App + Celery", "Encolamiento asíncrono de WhatsApp.")
+    Component(compEntregas, "Módulo Entregas", "Django App", "Asignación y tracking de delivery.")
+  }
+
+  ContainerDb(db, "Base de Datos", "PostgreSQL 16", "Datos transaccionales.")
+  ContainerQueue(cola, "Cola de Tareas", "Redis 7", "Cola de mensajes.")
+  System_Ext(pasarela, "Proveedor de Pagos", "Pasarela externa.")
+
+  Rel(compPedidos, compCatalogo, "Consulta stock", "Python call")
+  Rel(compPedidos, compPagos, "Solicita cobro Yape", "Python call")
+  Rel(compPedidos, compNotificaciones, "Encola notificación", "Python call")
+  Rel(compPedidos, compEntregas, "Crea entrega", "Python call")
+
+  Rel(compCatalogo, db, "Lee/escribe", "SQL/TCP")
+  Rel(compPedidos, db, "Persiste pedido", "SQL/TCP")
+  Rel(compPagos, db, "Guarda comprobante", "SQL/TCP")
+  Rel(compEntregas, db, "Actualiza estado", "SQL/TCP")
+  Rel(compNotificaciones, cola, "Encola mensaje", "Redis Protocol")
+  Rel(compPagos, pasarela, "Verifica referencia", "HTTPS/JSON")

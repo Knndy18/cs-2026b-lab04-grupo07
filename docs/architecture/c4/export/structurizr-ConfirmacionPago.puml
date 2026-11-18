@@ -1,0 +1,24 @@
+@startuml structurizr-ConfirmacionPago
+!include <C4/C4_Dynamic>
+LAYOUT_LEFT_RIGHT()
+
+title Diagrama Dinámico - Flujo de Confirmación y Pago Multi-Puesto (Flujo Feliz)
+
+Container(pwa, "PWA", "React", "Aplicación de usuario")
+Component(compPedidos, "Módulo Pedidos", "Django App", "Orquestador de pedidos")
+Component(compPagos, "Módulo Pagos", "Django App", "Gestor de pagos")
+System_Ext(pasarela, "Proveedor Yape", "HTTPS", "Pasarela externa")
+ContainerDb(db, "Base de Datos", "PostgreSQL 16", "Almacén relacional")
+Component(compNotificaciones, "Módulo Notificaciones", "Django App", "Gestor de avisos")
+ContainerQueue(cola, "Cola Redis", "Redis 7", "Cola Celery")
+
+Rel(pwa, compPedidos, "1. POST /pedidos/confirmar (referenciaYape)", "HTTPS/JSON")
+Rel(compPedidos, compPagos, "2. procesarPagoYape(pedidoId, ref)", "Python call")
+Rel(compPagos, pasarela, "3. verificarPago(monto, ref)", "HTTPS/JSON")
+Rel(compPedidos, db, "4. guardar(pedido) - estado PAGADO", "SQL/TCP")
+Rel(compPedidos, compNotificaciones, "5. notificarNuevoPedidoComerciante()", "Python call")
+Rel(compNotificaciones, cola, "6. enqueue(mensajeWhatsApp)", "Redis Protocol")
+Rel(compPedidos, pwa, "7. 200 OK - resumen de confirmación", "HTTPS/JSON")
+
+SHOW_LEGEND()
+@enduml

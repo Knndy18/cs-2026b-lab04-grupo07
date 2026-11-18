@@ -1,0 +1,24 @@
+@startuml structurizr-Contexto
+!include <C4/C4_Context>
+LAYOUT_LEFT_RIGHT()
+
+title Diagrama de Contexto del Sistema - San Camilo en Línea
+
+Person(cliente, "Cliente", "Usuario que busca productos, arma un carrito multi-puesto y realiza pagos con Yape.")
+Person(comerciante, "Comerciante", "Comerciante del mercado que administra sus productos y atiende pedidos desde su celular.")
+Person(repartidor, "Repartidor", "Personal encargado del recojo de pedidos en los puestos y su entrega final.")
+
+System(sancamilo, "San Camilo en Línea", "Plataforma e-commerce MVP para digitalizar las ventas del Mercado San Camilo.")
+
+System_Ext(pasarela, "Proveedor de Pagos", "Procesa y verifica las referencias de pagos con Yape y Plin.")
+System_Ext(whatsapp, "WhatsApp Business API", "Envía notificaciones de pedidos a los comerciantes.")
+
+Rel(cliente, sancamilo, "Busca productos, realiza pedidos multi-puesto y paga")
+Rel(comerciante, sancamilo, "Administra catálogo, stock y acepta pedidos")
+Rel(repartidor, sancamilo, "Consulta entregas asignadas y actualiza estado")
+
+Rel(sancamilo, pasarela, "Verifica referencias de pago Yape/Plin", "HTTPS/JSON")
+Rel(sancamilo, whatsapp, "Envía notificaciones de nuevos pedidos", "HTTPS/JSON")
+
+SHOW_LEGEND()
+@enduml

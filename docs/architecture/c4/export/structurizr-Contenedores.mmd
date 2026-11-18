@@ -1,0 +1,27 @@
+C4Container
+  title Diagrama de Contenedores - San Camilo en Línea
+  Person(cliente, "Cliente", "Usuario comprador de Arequipa.")
+  Person(comerciante, "Comerciante", "Vendedor del Mercado San Camilo.")
+  Person(repartidor, "Repartidor", "Encargado de la entrega física.")
+
+  System_Boundary(b1, "San Camilo en Línea") {
+    Container(pwa, "Aplicación Web Progresiva (PWA)", "React + Service Workers", "Interfaz web liviana para clientes y comerciantes.")
+    Container(api, "API Backend", "Python / Django REST Framework", "Monolito modular con módulos desacoplados.")
+    ContainerDb(db, "Base de Datos", "PostgreSQL 16", "Almacena productos, pedidos, pagos y auditoría.")
+    Container(worker, "Worker de Tareas", "Celery", "Procesamiento en segundo plano y reintentos.")
+    ContainerQueue(cola, "Cola de Tareas y Caché", "Redis 7", "Colas asíncronas y caché de catálogo.")
+  }
+
+  System_Ext(pasarela, "Proveedor de Pagos", "Verificación de pagos digitales.")
+  System_Ext(whatsapp, "WhatsApp Business API", "Mensajería y notificaciones.")
+
+  Rel(cliente, pwa, "Usa la PWA para comprar", "HTTPS")
+  Rel(comerciante, pwa, "Usa la PWA para gestionar", "HTTPS")
+  Rel(repartidor, pwa, "Usa la PWA para entregas", "HTTPS")
+
+  Rel(pwa, api, "Peticiones REST", "HTTPS/JSON")
+  Rel(api, db, "Lee y escribe datos", "SQL/TCP")
+  Rel(api, cola, "Encola notificaciones y lee caché", "Redis Protocol")
+  Rel(worker, cola, "Consume tareas pendientes", "Redis Protocol")
+  Rel(worker, whatsapp, "Envía mensajes de WhatsApp", "HTTPS/JSON")
+  Rel(api, pasarela, "Valida pagos Yape/Plin", "HTTPS/JSON")

@@ -1,0 +1,51 @@
+@startuml structurizr-Despliegue-Produccion
+!include <C4/C4_Deployment>
+LAYOUT_LEFT_RIGHT()
+
+title Diagrama de Despliegue - Entorno de Producción (VPS Único - R-03)
+
+Deployment_Node(user_device, "Dispositivos de Usuario", "Smartphones Android / iOS / Desktop") {
+    Deployment_Node(browser, "Navegador Web", "Chrome / Firefox / Safari") {
+        Container(pwa, "PWA San Camilo", "React + Service Workers", "Interfaz web liviana")
+    }
+}
+
+Deployment_Node(vps, "Servidor en la Nube (VPS Único)", "Ubuntu 22.04 LTS (R-03)") {
+    Deployment_Node(nginx, "Proxy Inverso", "Nginx 1.25") {
+        Component(webserver, "Nginx Reverse Proxy", "TLS Termination & Static Hosting")
+    }
+    Deployment_Node(docker, "Docker Compose", "Docker Compose v2") {
+        Deployment_Node(c_api, "Contenedor API", "Docker / Python 3.11") {
+            Container(api, "API Backend", "Django REST Framework", "Monolito modular")
+        }
+        Deployment_Node(c_worker, "Contenedor Worker", "Docker / Python 3.11") {
+            Container(worker, "Worker de Tareas", "Celery", "Procesamiento en segundo plano")
+        }
+        Deployment_Node(c_redis, "Contenedor Redis", "Docker / Redis 7") {
+            ContainerQueue(cola, "Redis 7", "In-Memory Store", "Cola y caché")
+        }
+        Deployment_Node(c_pg, "Contenedor PostgreSQL", "Docker / PostgreSQL 16") {
+            ContainerDb(db, "PostgreSQL 16", "Relational DB", "Persistencia principal")
+        }
+    }
+}
+
+Deployment_Node(saas, "Servicios Externos en la Nube", "Internet / SaaS") {
+    Deployment_Node(node_yape, "Proveedor Yape/Plin", "HTTPS/REST") {
+        System_Ext(pasarela, "Pasarela de Pagos", "API de verificación")
+    }
+    Deployment_Node(node_wa, "Meta Cloud", "HTTPS/REST") {
+        System_Ext(whatsapp, "WhatsApp Cloud API", "Notificaciones por mensaje")
+    }
+}
+
+Rel(pwa, webserver, "Peticiones HTTPS", "Port 443")
+Rel(webserver, api, "Proxy Pass", "Port 8000 (TCP)")
+Rel(api, db, "Consultas SQL", "Port 5432 (TCP)")
+Rel(api, cola, "Encolar tareas / Caché", "Port 6379 (TCP)")
+Rel(worker, cola, "Consumir tareas", "Port 6379 (TCP)")
+Rel(worker, whatsapp, "Envío de avisos", "HTTPS")
+Rel(api, pasarela, "Validación de pagos", "HTTPS")
+
+SHOW_LEGEND()
+@enduml

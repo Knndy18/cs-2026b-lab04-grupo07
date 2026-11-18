@@ -1,0 +1,34 @@
+@startuml structurizr-Contenedores
+!include <C4/C4_Container>
+LAYOUT_LEFT_RIGHT()
+
+title Diagrama de Contenedores - San Camilo en Línea (Monolito Modular)
+
+Person(cliente, "Cliente", "Usuario comprador de Arequipa.")
+Person(comerciante, "Comerciante", "Vendedor del Mercado San Camilo.")
+Person(repartidor, "Repartidor", "Encargado del delivery local.")
+
+System_Boundary(c1, "San Camilo en Línea") {
+    Container(pwa, "Aplicación Web Progresiva (PWA)", "React + Service Workers", "Interfaz web liviana para clientes, comerciantes y repartidores.")
+    Container(api, "API Backend", "Python / Django REST Framework", "Monolito modular que implementa casos de uso de catálogo, pedidos y pagos.")
+    ContainerDb(db, "Base de Datos", "PostgreSQL 16", "Almacena usuarios, productos, carritos, pedidos y auditoría.")
+    Container(worker, "Worker de Tareas", "Celery / Python", "Ejecuta notificaciones de WhatsApp y reintentos en segundo plano.")
+    ContainerQueue(cola, "Cola de Tareas y Caché", "Redis 7", "Gestión de colas asíncronas y caché de catálogo.")
+}
+
+System_Ext(pasarela, "Proveedor de Pagos", "Verifica pagos digitales con Yape y Plin.")
+System_Ext(whatsapp, "WhatsApp Business API", "Servicio externo de mensajería comercial.")
+
+Rel(cliente, pwa, "Usa la PWA para comprar", "HTTPS")
+Rel(comerciante, pwa, "Usa la PWA para gestionar su puesto", "HTTPS")
+Rel(repartidor, pwa, "Usa la PWA para ver entregas", "HTTPS")
+
+Rel(pwa, api, "Realiza peticiones REST", "HTTPS/JSON")
+Rel(api, db, "Lee y escribe datos transaccionales", "SQL/TCP")
+Rel(api, cola, "Encola tareas de notificación y lee caché", "Redis Protocol")
+Rel(worker, cola, "Consume tareas pendientes", "Redis Protocol")
+Rel(worker, whatsapp, "Envía mensajes a comerciantes", "HTTPS/JSON")
+Rel(api, pasarela, "Verifica constancias de pago", "HTTPS/JSON")
+
+SHOW_LEGEND()
+@enduml

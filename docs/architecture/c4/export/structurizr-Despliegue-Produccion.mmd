@@ -1,0 +1,33 @@
+C4Deployment
+  title Diagrama de Despliegue - Producción en VPS Único (San Camilo en Línea)
+
+  Deployment_Node(user, "Dispositivo de Usuario", "Móvil / Desktop") {
+    Deployment_Node(browser, "Navegador Web", "Chrome / Safari") {
+      Container(pwa, "PWA San Camilo", "React", "Frontend liviano")
+    }
+  }
+
+  Deployment_Node(vps, "Servidor Cloud VPS Único", "Ubuntu 22.04 LTS (R-03)") {
+    Deployment_Node(nginx, "Proxy Inverso", "Nginx 1.25") {
+      Component(proxy, "Nginx", "Proxy y TLS")
+    }
+    Deployment_Node(docker, "Docker Compose", "v2") {
+      Container(api, "API Backend", "Django REST", "Monolito modular")
+      Container(worker, "Worker Celery", "Celery 5", "Procesamiento en segundo plano")
+      ContainerQueue(cola, "Redis 7", "Redis", "Cola y caché")
+      ContainerDb(db, "PostgreSQL 16", "PostgreSQL", "Base de datos transaccional")
+    }
+  }
+
+  Deployment_Node(saas, "Servicios Cloud Externos", "SaaS") {
+    System_Ext(pasarela, "Pasarela Pagos", "Yape / Plin")
+    System_Ext(whatsapp, "WhatsApp API", "Meta Cloud")
+  }
+
+  Rel(pwa, proxy, "Peticiones HTTPS", "Port 443")
+  Rel(proxy, api, "Reverse Proxy", "Port 8000")
+  Rel(api, db, "Persistencia", "Port 5432")
+  Rel(api, cola, "Encolar / Caché", "Port 6379")
+  Rel(worker, cola, "Consumir", "Port 6379")
+  Rel(worker, whatsapp, "Envía WhatsApp", "HTTPS")
+  Rel(api, pasarela, "Valida pagos", "HTTPS")

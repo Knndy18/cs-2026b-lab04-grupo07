@@ -1,0 +1,32 @@
+@startuml structurizr-Componentes
+!include <C4/C4_Component>
+LAYOUT_LEFT_RIGHT()
+
+title Diagrama de Componentes - API Backend (Monolito Modular Acíclico)
+
+Container_Boundary(api_boundary, "API Backend") {
+    Component(compCatalogo, "Módulo Catálogo", "Django App (catalogo)", "Gestiona catálogo agrupado por puesto, filtrado y stock (RF-01, RF-02, RF-05).")
+    Component(compPedidos, "Módulo Pedidos", "Django App (pedidos)", "Orquesta ciclo de vida del pedido multi-puesto, reserva de stock y estados (RF-03, RF-06).")
+    Component(compPagos, "Módulo Pagos", "Django App (pagos)", "Verifica pagos Yape mediante puerto PasarelaPago y adaptadores (RF-04).")
+    Component(compNotificaciones, "Módulo Notificaciones", "Django App (notificaciones)", "Encola mensajes de WhatsApp asíncronos para evitar bloqueo HTTP (RF-08).")
+    Component(compEntregas, "Módulo Entregas", "Django App (entregas)", "Asignación de pedidos a repartidores y seguimiento de ruta (RF-07).")
+}
+
+ContainerDb(db, "Base de Datos", "PostgreSQL 16", "Persistencia relacional ACID.")
+ContainerQueue(cola, "Cola de Tareas", "Redis 7", "Cola Celery.")
+System_Ext(pasarela, "Proveedor de Pagos", "Pasarela externa.")
+
+Rel(compPedidos, compCatalogo, "Consulta stock disponible antes de confirmar", "Python method call")
+Rel(compPedidos, compPagos, "Solicita verificación de referencia Yape", "Python method call")
+Rel(compPedidos, compNotificaciones, "Encola notificación al comerciante tras confirmar", "Python method call")
+Rel(compPedidos, compEntregas, "Crea registro de entrega con delivery", "Python method call")
+
+Rel(compCatalogo, db, "Lee y escribe productos y stock", "SQL/TCP")
+Rel(compPedidos, db, "Persiste pedidos globales e ítems", "SQL/TCP")
+Rel(compPagos, db, "Registra comprobantes y estado de pago", "SQL/TCP")
+Rel(compEntregas, db, "Registra y actualiza entregas", "SQL/TCP")
+Rel(compNotificaciones, cola, "Encola mensajes de WhatsApp", "Redis Protocol")
+Rel(compPagos, pasarela, "Verifica referencia mediante YapeAdapter", "HTTPS/JSON")
+
+SHOW_LEGEND()
+@enduml

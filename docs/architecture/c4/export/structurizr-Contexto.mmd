@@ -1,17 +1,17 @@
 C4Context
   title Diagrama de Contexto - San Camilo en Línea
-  Person(cliente, "Cliente", "Comprador de Arequipa que realiza pedidos multipuesto.")
-  Person(comerciante, "Comerciante", "Vendedor del Mercado San Camilo que administra ofertas.")
-  Person(repartidor, "Repartidor", "Encargado de la entrega local de pedidos.")
+  Person(cliente, "Cliente", "Usuario que busca productos, arma un carrito multi-puesto y realiza pagos con Yape.")
+  Person(comerciante, "Comerciante", "Comerciante del mercado que administra sus productos y atiende pedidos desde su celular.")
+  Person(repartidor, "Repartidor", "Personal encargado del recojo de pedidos en los puestos y su entrega final.")
 
-  System(sancamilo, "San Camilo en Línea", "Plataforma web para exploración de catálogos multipuesto, pedidos y gestión de pagos.")
+  System(sancamilo, "San Camilo en Línea", "Plataforma e-commerce MVP para digitalizar las ventas del Mercado San Camilo.")
 
-  System_Ext(pagos, "Proveedor de Pagos", "Pasarela de pagos digitales (Yape / Plin).")
-  System_Ext(whatsapp, "WhatsApp Business API", "Servicio externo de mensajería y notificaciones.")
+  System_Ext(pasarela, "Proveedor de Pagos", "Procesa y verifica las referencias de pagos con Yape y Plin.")
+  System_Ext(whatsapp, "WhatsApp Business API", "Envía notificaciones de pedidos a los comerciantes.")
 
-  Rel(cliente, sancamilo, "Explora puestos, arma carrito multipuesto y paga")
-  Rel(comerciante, sancamilo, "Publica productos, gestiona precios y stock")
-  Rel(repartidor, sancamilo, "Consulta rutas y actualiza estados de reparto")
+  Rel(cliente, sancamilo, "Busca productos, realiza pedidos multi-puesto y paga")
+  Rel(comerciante, sancamilo, "Administra catálogo, stock y acepta pedidos")
+  Rel(repartidor, sancamilo, "Consulta entregas asignadas y actualiza estado")
 
-  Rel(sancamilo, pagos, "Solicita cobros y valida comprobantes", "HTTPS/JSON")
-  Rel(sancamilo, whatsapp, "Envía notificaciones de estado", "HTTPS/JSON")
+  Rel(sancamilo, pasarela, "Verifica referencias de pago Yape/Plin", "HTTPS/JSON")
+  Rel(sancamilo, whatsapp, "Envía notificaciones de nuevos pedidos", "HTTPS/JSON")
