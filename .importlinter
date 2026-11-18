@@ -1,0 +1,18 @@
+[importlinter]
+root_package = pedidos
+syspath = src
+
+[importlinter:contract:capas]
+name = FF-01 Capas del monolito modular sin dependencias ciclicas
+type = layers
+layers =
+    pedidos.ia
+    pedidos.models
+
+[importlinter:contract:puertos]
+name = FF-02 Solo el arranque conoce los adaptadores de pago (ADR-005)
+type = forbidden
+source_modules =
+    pedidos.models
+forbidden_modules =
+    pedidos.ia.adaptadores
