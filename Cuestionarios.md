@@ -295,3 +295,124 @@ Al solicitar el borrador del modelo Structurizr DSL con el Prompt 1, la IA inclu
 
 - **Nuevo Developer del Equipo (Enfoque de Implementación):** Se le presenta la secuencia iniciando en el **Nivel 2 (Contenedores)** para entender la pila tecnológica (React, Django REST, PostgreSQL, Redis), seguido del **Nivel 3 (Componentes)** y el **Diagrama de Clases UML (Nivel 4)** para indicarle la estructura exacta de paquetes/módulos y dónde debe programar una nueva historia de usuario.
 
+
+---
+
+# Laboratorio 07: Patrones de Diseño y Refactorización
+
+---
+
+## 1. ¿Qué diferencia hay entre un patrón arquitectónico (Laboratorio 04) y un patrón de diseño? Dé un ejemplo de cada uno en su caso.
+
+* **Patrón Arquitectónico (Nivel Macro):** Define la estructura fundamental de alto nivel de todo el sistema, estableciendo subsistemas, contenedores, esquemas de persistencia y responsabilidades de infraestructura. Afecta transversalmente a la aplicación, determina cómo se despliega el software y es sumamente costoso de cambiar una vez implementado.
+  * **Ejemplo en San Camilo en Línea:** El patrón **Monolito Modular** (`ADR-001`), que organiza el backend en módulos lógicos cohesivos dentro de un único proceso ejecutable desplegado en un servidor VPS único (`R-03`).
+
+* **Patrón de Diseño (Nivel Micro / Código):** Resuelve problemas recurrentes y localizados de diseño orientado a objetos dentro de un módulo o componente específico. Organiza clases, interfaces y algoritmos para facilitar la modificabilidad y el desacoplamiento sin alterar la arquitectura global.
+  * **Ejemplo en San Camilo en Línea:** Los patrones **Strategy y Adapter** (`src/pedidos/pagos.py`), que unifican las APIs dispares de Yape y Plin bajo la abstracción `PasarelaPago`, permitiendo añadir nuevos medios de cobro sin modificar la lógica del servicio de pedidos.
+
+---
+
+## 2. Explique con su código cómo Strategy materializa el principio abierto/cerrado. ¿Qué tuvo que modificar para agregar una variante nueva?
+
+El principio Abierto/Cerrado (*Open/Closed Principle - OCP*) establece que las entidades de software deben estar abiertas para su extensión, pero cerradas para su modificación.
+
+En `src/pedidos/pagos.py`, el patrón **Strategy** materializa OCP a través del protocolo abstracto:
+
+```python
+class PasarelaPago(Protocol):
+    def cobrar(self, monto: Decimal, referencia: str) -> ComprobantePago:
+        ...
+```
+
+El orquestador de pedidos (`ServicioPedidos.procesar_pedido_multipuesto`) no conoce si el pago se procesa con Yape, Plin o una pasarela bancaria; únicamente invoca el método polimórfico `pasarela.cobrar(monto, referencia)`.
+
+**¿Qué tuvimos que modificar para agregar una variante nueva (ej. `PlinAdapter`)?**
+1. **0 modificaciones en el código núcleo:** La clase `ServicioPedidos` no sufrió ninguna alteración en sus métodos ni condicionales.
+2. **Extensión pura:** Se creó una nueva clase que implementa el protocolo (`class PlinAdapter(PasarelaPago)`) y se registró dinámicamente en la fábrica mediante:
+   ```python
+   FabricaPasarelas.registrar("plin", PlinAdapter)
+   ```
+El sistema incorporó un nuevo medio de pago cumpliendo OCP de manera rigurosa.
+
+---
+
+## 3. ¿En qué se diferencian Adapter y Decorator si ambos "envuelven" un objeto?
+
+Aunque ambos patrones estructurales utilizan el mecanismo de composición (*wrapping*), persiguen propósitos completamente diferentes:
+
+| Criterio | Patrón Adapter (`src/pedidos/pagos.py`) | Patrón Decorator (`src/pedidos/ia.py`) |
+|---|---|---|
+| **Intención Principal** | **Convertir una interfaz incompatible** en otra que el cliente espera. | **Añadir responsabilidades o comportamientos adicionales** dinámicamente sin modificar la clase base. |
+| **Interfaz Expuesta** | Expone una interfaz **diferente** a la del objeto envuelto (adapta interfaces dispares). | Expone **exactamente la misma interfaz** que el objeto envuelto (es transparente para el cliente). |
+| **Ejemplo en el Proyecto** | `YapeAdapter` envuelve el cliente externo de Yape (que espera `telefono` y `token_yape`) y lo adapta al método unificado `cobrar(monto, referencia)`. | `LLMConCache` implementa `ProveedorLLM` y envuelve a cualquier `ProveedorLLM`, interceptando la llamada para responder desde memoria si la consulta ya fue procesada. |
+
+---
+
+## 4. ¿Por qué el patrón State es la implementación natural de un diagrama de máquina de estados? ¿Qué ganó frente a usar condicionales?
+
+En un diagrama UML de máquina de estados, el comportamiento de una entidad está determinado por su estado actual, y cada estado define qué eventos acepta y a qué nuevo estado transita.
+
+El patrón **State** (`src/pedidos/estados.py`) es la implementación orientada a objetos natural porque cada estado del diagrama se convierte en una clase polimórfica (`EstadoBorrador`, `EstadoConfirmado`, `EstadoPagado`, `EstadoCancelado`) que hereda de una clase base abstracta `EstadoPedido`. 
+
+**¿Qué se ganó frente al uso de condicionales?**
+1. **Eliminación de la complejidad ciclomática:** Se eliminaron las sentencias anidadas `if estado == 'BORRADOR': ... elif estado == 'PAGADO': ...`, reduciendo la complejidad del ciclo de vida de CC=14 a CC=2.
+2. **Prevención de transiciones inválidas:** Intentar pagar un pedido cancelado o cancelar un pedido entregado es rechazado inmediatamente por el propio objeto de estado lanzando la excepción tipada `TransicionInvalidaError`.
+3. **Principio de Responsabilidad Única (SRP):** Las reglas de cada estado están encapsuladas en su propia clase, haciendo trivial añadir un nuevo estado (ej. `EstadoEnRuta`) sin riesgo de romper los estados existentes.
+
+---
+
+## 5. ¿Por qué son indispensables las pruebas de caracterización antes de refactorizar? Describa un error que sus pruebas detectaron.
+
+Las **pruebas de caracterización** (Fowler, 2018) son indispensables porque capturan y "congelan" el comportamiento observable actual del código legado antes de realizar cualquier cambio estructural. Sin ellas, una refactorización es un salto al vacío donde es imposible saber si un cambio de diseño alteró inadvertidamente una regla de negocio o introdujo una regresión.
+
+**Error detectado en nuestro caso:**
+Al ejecutar las pruebas de caracterización sobre la versión monolítica (`antes/servicio.py`), se detectó un fallo crítico de inconsistencia transaccional: cuando un cliente enviaba un medio de pago no registrado o inválido, la función ejecutaba la confirmación en memoria de los ítems del pedido **antes** de validar la pasarela de pagos. Al fallar el pago, el pedido quedaba en un estado híbrido "confirmado pero sin pago registrado". 
+Gracias a las pruebas de caracterización, la refactorización con `FabricaPasarelas` corrigió este defecto validando la existencia de la pasarela y la completitud de la referencia antes de aplicar cualquier mutación de estado.
+
+---
+
+## 6. ¿Qué patrón propuso la IA que ustedes rechazaron y por qué? ¿Qué es la "patternitis"?
+
+Durante la fase de diseño asistido por IA (Interacción 6 de la bitácora de Lab 07), la IA propuso aplicar:
+1. **Singleton para `FabricaPasarelas`:** Argumentó que debía existir una única instancia global de la fábrica.
+2. **Abstract Factory para la creación de pasarelas:** Sugirió una familia de fábricas dividida entre billeteras móviles y pasarelas bancarias.
+
+**Justificación del Rechazo por el Equipo:**
+* **Rechazo de Singleton:** El patrón Singleton introduce estado global mutable, lo cual acopla los tests en `pytest`, dificulta la inyección de pasarelas simuladas (*mocking*) e impide la ejecución concurrente de pruebas.
+* **Rechazo de Abstract Factory:** En el dominio de San Camilo no existen múltiples familias de objetos de pago interdependientes; solo existe la familia de adaptadores `PasarelaPago`.
+
+**Definición de "Patternitis":**
+Es el antipatrón de diseño y vicio de sobreingeniería en el cual un desarrollador o una IA intenta forzar patrones de diseño complejos en cada rincón del código sin que exista un olor real o una necesidad de variabilidad que lo justifique. La *patternitis* aumenta innecesariamente el número de clases, la indirección y la carga cognitiva, degradando la mantenibilidad del sistema.
+
+---
+
+## 7. ¿Por qué se debe tratar la salida de un LLM como dato no confiable? Describa los guardrails de su caso y qué protegen.
+
+La salida de un modelo de lenguaje (LLM) debe tratarse como **entrada externa no confiable** (*untrusted input*) porque los modelos generativos son sistemas estocásticos y probabilísticos propensos a **alucinaciones** (generación de datos falsos o inexistentes con apariencia de verdad), respuestas fuera de formato y susceptibilidad a manipulaciones adversarias (*prompt injection* o *jailbreaks*). Si sus salidas se conectan directamente a la lógica de negocio o a la base de datos sin sanitizar, pueden provocar pérdidas económicas o fallos de seguridad.
+
+**Guardrails implementados en `src/pedidos/ia.py` (Chain of Responsibility):**
+* **Guardrails de Entrada:**
+  1. `GuardrailEntradaNoVacia`: Rechaza consultas vacías o de puros espacios en blanco.
+  2. `GuardrailLongitudMaxima`: Limita el texto a un máximo de 500 caracteres, mitigando ataques de denegación de servicio por consumo excesivo de tokens.
+  3. `GuardrailAntiInyeccion`: Escanea y bloquea patrones típicos de *Prompt Injection* (ej. "ignora instrucciones previas"), inyecciones SQL (`UNION SELECT`, `DROP TABLE`) y secuencias de script maliciosas.
+* **Guardrails de Salida:**
+  1. `GuardrailFormatoRespuesta`: Valida que la respuesta del LLM cumpla con la estructura requerida por el frontend.
+  2. `GuardrailPreciosValidos`: Escanea el texto generado buscando precios en moneda peruana (`S/ X.XX`) y **bloquea inmediatamente cualquier respuesta que ofrezca productos con precio cero (`S/ 0.00`)** o formatos de moneda corrompidos, protegiendo a los comerciantes de San Camilo de ventas fraudulentas por alucinaciones del modelo.
+
+---
+
+## 8. Según sus métricas, ¿valió la pena el refactor? Argumente con la complejidad ciclomática, las líneas de código y los cambios previstos.
+
+**Sí, valió absolutamente la pena.** El análisis cuantitativo con `radon` y el análisis de mantenibilidad sustentan con contundencia esta conclusión:
+
+1. **Reducción Drástica de Complejidad Ciclomática:**
+   * El método central de procesamiento de pedidos redujo su complejidad ciclomática de **14 (Clasificación C - Código complejo y riesgoso)** a **2 (Clasificación A - Código simple y lineal)**, lo que representa una **reducción del 85.7%**.
+   * La complejidad ciclomática promedio de todo el módulo se redujo en un **78.8%** (de 8.5 a 1.8), permitiendo que la cobertura de pruebas unitarias aumentara de 8 a 58 tests automatizados ejecutados en 0.08 segundos.
+
+2. **Evaluación Honesta de las Líneas de Código (SLOC):**
+   * Las líneas de código aumentaron un **+61.3%** (de 88 a 142 SLOC). Sin embargo, este incremento no es código duplicado ni redundante, sino el costo deliberado de introducir contratos explícitos (`Protocol`), manejo tipado de excepciones, clases de estrategia y bucles de reintento ante caídas de red.
+
+3. **Facilidad ante Cambios Previstos:**
+   * En la versión monolítica anterior, agregar soporte para un nuevo mercado o un nuevo medio de pago (como Plin o transferencias) requería editar el método central, con un riesgo altísimo de regresión. Con la versión refactorizada, el costo de incorporar un nuevo medio de pago es de **0 líneas modificadas en el código existente**, cumpliendo rigurosamente el Principio Abierto/Cerrado y garantizando la escalabilidad futura de San Camilo en Línea.
+
+---
