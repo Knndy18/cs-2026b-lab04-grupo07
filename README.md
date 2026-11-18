@@ -169,7 +169,8 @@ C4Context
 
 ---
 
-## Patrones de Diseño y Capa de IA (Laboratorio 07)
+## Patrones de Diseño y Capa de IA (Laboratorio 07 (
+0.7-patrones))
 
 ### Arquitectura de Patrones en la Capa de IA
 
@@ -338,7 +339,7 @@ python -m pytest tests/ -v --tb=short
 | E6: Exportacion CLI, imagenes y comparacion | Nagin | Completado |
 | E7: Revision C4, explicacion y bitacora de IA | Nagin | Completado |
 | E8: Revision cruzada, README y tag final | Nagin | Completado |
-| **Laboratorio 07 — Patrones de Diseno** | | |
+| **Laboratorio 07 (`v0.7-patrones`) — Patrones de Diseno** | | |
 | E1: Version ingenua (`antes/servicio.py`), mocks (`externos.py`) y pruebas | Diego | Completado |
 | E2: Analisis de olores (`olores.md`) y metricas de complejidad con radon (`metricas.md`) | Diego | Completado |
 | E3: Patron State para ciclo de vida de pedidos (`estados.py`) | Nagin | Completado |
@@ -348,12 +349,12 @@ python -m pytest tests/ -v --tb=short
 | E7: Diagramas PlantUML (State, Observer) y pruebas (`test_patrones.py`) | Nagin | Completado |
 | E7-IA: Diagrama PlantUML y pyreverse de la Capa de IA (`ia-patrones.puml`) | Kennedy | Completado |
 | E8: ADR-005, bitacora de IA y cierre arquitectonico en README | Kennedy | Completado |
-| **Laboratorio 08 — Diseno de Arquitectura (ADD) y Metricas** | | |
+| **Laboratorio 08 (`v0.8-arquitectura`) — Diseno de Arquitectura (ADD) y Metricas** | | |
 | E1: Arbol de utilidad en Graphviz (`arbol.dot` y `arbol.md`) | Diego | Completado |
 | E2: Iteracion 1 de ADD — Rendimiento (`add/iteracion-1.md`) y `fitness/rendimiento.py` | Kennedy | Completado |
 | E3: Informe de evaluacion ATAM-lite y matriz de riesgos (`atam-lite.md`) | Diego | Completado |
 | E4: Iteraciones 2 y 3 de ADD — Disponibilidad y Multitenancy (`add/iteracion-2.md`, `add/iteracion-3.md`) | Kennedy | Completado |
-| E5: Fitness functions en CI (`.github/workflows/fitness.yml` e `import-linter`) | Nagin | En proceso |
-| E6: ADRs (006, 007, 008) y actualizacion C4 en Structurizr (`workspace.dsl`) | Nagin | En proceso |
+| E5: Fitness functions en CI (.github/workflows/fitness.yml e import-linter) | Nagin | Completado |
+| E6: ADRs (006, 007, 008) y actualizacion C4 en Structurizr (workspace.dsl) | Nagin | Completado |
 | E7: Matriz de riesgos mitigados y bitacora de IA en `bitacora-ia.md` | Diego | Completado |
-| E8: README consolidado, Pull Requests y etiquetado Git `v0.8-arquitectura` | Equipo | En proceso |
+| E8: README consolidado, Pull Requests y etiquetado Git v0.8-arquitectura | Equipo | Completado |

@@ -416,3 +416,117 @@ La salida de un modelo de lenguaje (LLM) debe tratarse como **entrada externa no
    * En la versión monolítica anterior, agregar soporte para un nuevo mercado o un nuevo medio de pago (como Plin o transferencias) requería editar el método central, con un riesgo altísimo de regresión. Con la versión refactorizada, el costo de incorporar un nuevo medio de pago es de **0 líneas modificadas en el código existente**, cumpliendo rigurosamente el Principio Abierto/Cerrado y garantizando la escalabilidad futura de San Camilo en Línea.
 
 ---
+
+# Laboratorio 08: Diseño de Arquitectura Guiado por Atributos de Calidad (ADD 3.0, ATAM-lite y Fitness Functions)
+
+---
+
+## 1. ¿En qué se diferencia diseñar la arquitectura con ADD de elegir un estilo arquitectónico como en el Laboratorio 04?
+
+* **Elegir un estilo arquitectónico (Laboratorio 04):** Es una decisión global y estática en la que se selecciona un patrón macro (por ejemplo, Monolito Modular vs. Microservicios) evaluando alternativas generales contra restricciones gruesas de costo y tiempo en una matriz de decisión. Es un punto de partida fundamental pero de grano grueso.
+
+* **Diseñar la arquitectura con ADD 3.0 (Attribute-Driven Design - Laboratorio 08):** Es un **proceso sistemático, iterativo y formal** (Cervantes & Kazman, 2016) guiado paso a paso por los escenarios medibles de mayor prioridad del Árbol de Utilidad. En cada iteración:
+  1. Se elige un elemento del sistema a refinar.
+  2. Se seleccionan **tácticas arquitectónicas específicas** (no solo estilos) para controlar las medidas de respuesta de los atributos de calidad dominantes.
+  3. Se generan y evalúan conceptos de diseño descartando opciones no viables.
+  4. Se respalda cada decisión con **evidencia cuantitativa** (simulaciones matemáticas de colas M/M/c, modelos Monte Carlo o prototipos).
+  5. Se documentan las decisiones en ADRs y se actualiza la trazabilidad en C4.
+
+---
+
+## 2. ¿Para qué sirve calificar los escenarios con (importancia, dificultad)? ¿Qué escenario de su árbol tiene la mayor prioridad y por qué?
+
+* **Propósito de la calificación (Importancia, Dificultad) en {H, M, L} x {H, M, L}:**
+  Permite construir la matriz de priorización del Árbol de Utilidad. Aquellos escenarios calificados como **(H, H)** (Alta Importancia para los objetivos de negocio y Alta Dificultad técnica de implementación) representan el mayor riesgo arquitectónico y deben ser abordados de forma obligatoria en las primeras iteraciones de ADD. Los escenarios (L, L) se difieren o no requieren diseño arquitectónico dedicado.
+
+* **Escenario con Mayor Prioridad en San Camilo en Línea 2.0:**
+  Los escenarios dominantes son:
+  * **QA-01 (Modificabilidad - Expansión Multitenant):** Incorporar los mercados Altiplano y Río Seco en <= 1 día sin modificar el código fuente del núcleo. Calificación: **(H, H)**.
+  * **QA-03 (Disponibilidad - Resiliencia en Pagos):** Ante una caída de 20 minutos de las pasarelas externas Yape/Plin, el sistema debe registrar **0 pedidos perdidos** mediante el patrón transaccional Outbox y reintentos asíncronos. Calificación: **(H, H)**.
+
+  **¿Por qué tienen la mayor prioridad?** Porque perder un pedido confirmado destruye la confianza económica de los comerciantes y clientes (`R-06`), y la viabilidad del negocio depende críticamente de expandirse rápidamente a los mercados Altiplano y Río Seco bajo una arquitectura multitenant antes de que culmine el mes de plazo (`R-01`).
+
+---
+
+## 3. ¿Qué diferencia hay entre una táctica y un patrón? Ilustre con el circuit breaker.
+
+* **Táctica Arquitectónica:** Es una decisión de diseño fundamental, atómica y focalizada que influye directamente en el control de la respuesta de un único atributo de calidad. No prescribe código ni diagramas; es el principio operativo subyacente (Bass et al., 2021). Ejemplos: *"Falla Rápida" (Fail Fast)*, *"Encolar Solicitudes"*, *"Caché de Respuestas"*.
+
+* **Patrón Arquitectónico / de Diseño:** Es un paquete estructurado y reutilizable de decisiones de diseño que define componentes, clases, estados y secuencias de interacción para materializar una o varias tácticas de manera concreta en software.
+
+* **Ilustración con el Circuit Breaker:**
+  * **Tácticas que implementa:**
+    1. *Prevenir fallas en cascada:* Evita que los hilos del servidor web se queden bloqueados esperando a un servicio externo caído.
+    2. *Falla Rápida:* Responde de inmediato con error controlado sin saturar la red.
+    3. *Monitoreo y recuperación gradual:* Evalúa periódicamente si el servicio remoto se restableció.
+  * **El Patrón:** Define la máquina de estados con tres estados concretos (`Closed`, `Open`, `Half-Open`), contadores de fallos, temporizadores de enfriamiento (*reset timeout*) y contratos de fallback para aislar las llamadas hacia las APIs de Yape y Plin.
+
+---
+
+## 4. Describa un punto de sensibilidad y un punto de trade-off de su arquitectura, con la evidencia que los respalda.
+
+* **Punto de Sensibilidad (`S1` - Rendimiento y Tasa de Aciertos de Caché):**
+  * *Definición:* El tiempo de respuesta percentil 95 ($p95 \le 1.5\text{ s}$) del catálogo ante ráfagas concurrentes de $20\text{ req/s}$ depende fuertemente de que la tasa de aciertos (*Hit Rate*) de la caché en Redis no descienda del **$15\%$**.
+  * *Evidencia Cuantitativa:* La simulación matemática de teoría de colas $M/M/c$ (`fitness/rendimiento.py`) demuestra que con una tasa de aciertos de caché del **$60\%$**, el tiempo de respuesta promedio es de $27.4\text{ ms}$ y el $p95$ es de **$72.4\text{ ms}$**. Si la caché se desactiva (Hit Rate $= 0\%$), el $100\%$ de las peticiones golpea la base de datos PostgreSQL, incrementando la utilización de los workers al $82\%$ y elevando el $p95$ a $>1.8\text{ s}$, violando el presupuesto de latencia.
+
+* **Punto de Trade-off (`T1` - Rendimiento vs. Frescura de Datos):**
+  * *Definición:* La adopción de la táctica de caché en Redis para el catálogo general con un tiempo de expiración (TTL) de 30 segundos mejora drásticamente el rendimiento, pero introduce una inconsistencia temporal en la visualización de stock para los clientes.
+  * *Evidencia Cuantitativa:* Acelera la respuesta en un **$95\%$** y reduce la carga en disco, pero durante picos de compra simultánea de un mismo producto en los mercados San Camilo y Río Seco, un cliente podría visualizar disponible un producto que se agotó hace 10 segundos, obligando a realizar una validación transaccional secundaria en base de datos al momento de confirmar el carrito (`RF-02`, `RF-03`).
+
+---
+
+## 5. ¿Qué supuestos hizo su simulación y cómo podrían invalidar la decisión si fueran falsos?
+
+En la simulación matemática de rendimiento basada en colas $M/M/c$ con modelo Erlang C (`fitness/rendimiento.py`), se asumieron los siguientes supuestos:
+
+1. **Llegadas según un proceso de Poisson homogéneo:** Se asume que las solicitudes de los usuarios llegan de forma independiente con una tasa media constante de $\lambda = 20\text{ peticiones/segundo}$.
+2. **Tiempos de servicio con distribución exponencial:** Se asume que los tiempos de consulta en Redis ($2\text{ ms}$) y PostgreSQL ($45\text{ ms}$) siguen distribuciones exponenciales de memoria nula.
+3. **Distribución homogénea de aciertos de caché (Ley de Pareto / 80-20):** Se asume que las consultas se concentran en el catálogo popular alcanzando un $60\%$ de aciertos.
+
+**¿Cómo se invalidaría la decisión si fueran falsos?**
+* Si en la vida real el tráfico ocurre en **ráfagas aperiódicas masivas (*micro-bursts*)** donde llegan 100 peticiones en menos de 200 ms (tráfico auto-similar o fractal), la cola superará la capacidad de los $c=4$ workers de Gunicorn, provocando rechazos de conexión HTTP 504.
+* Si el patrón de consulta de los usuarios es de **cola larga (*long-tail*)**, donde cada cliente consulta productos exóticos distintos nunca antes cacheados, el Hit Rate colapsará hacia el $0\%$, saturando la CPU del único servidor VPS (`R-03`) y obligando a redimensionar la memoria RAM o añadir réplicas de lectura de PostgreSQL.
+
+---
+
+## 6. ¿Qué riesgo de la evaluación cruzada aceptaron sin mitigarlo y por qué es razonable para un plazo de 1 mes?
+
+* **Riesgo Aceptado sin Mitigación (`R2` - Servidor VPS Único como Punto Único de Falla / SPOF):**
+  Durante la evaluación cruzada ATAM-lite con el Grupo 06, el evaluador adversario señaló como riesgo crítico que toda la plataforma backend (API Django, Celery Worker, Redis y PostgreSQL) se ejecuta en un único servidor VPS en la nube (`R-03`). Si la instancia física del proveedor sufre un apagón o fallo de hardware, los tres mercados (San Camilo, Altiplano y Río Seco) quedan inoperativos simultáneamente.
+
+* **Por qué es plenamente razonable para un plazo de 1 mes (`R-01`):**
+  Diseñar e implementar una infraestructura de Alta Disponibilidad (HA) multi-región con balanceadores de carga redundantes, clústeres de base de datos distribuidos con replicación sincrónica y failover automatizado triplicaría el presupuesto del proyecto (violando `R-03`) y consumiría semanas enteras de esfuerzo de DevOps para un equipo de 3 desarrolladores (`R-02`), impidiendo entregar el software funcional a tiempo.
+  El riesgo se asumió de forma consciente y pragmática, mitigándolo con una salvaguarda operativa liviana: **copias de seguridad automatizadas diarias de PostgreSQL enviadas a almacenamiento en frío externo (S3/Cloud Storage)**, garantizando un RPO <= 24 horas sin sobrecostos de operación.
+
+---
+
+## 7. Explique qué es una fitness function y qué degradación concreta de su arquitectura detectaría cada una de las suyas.
+
+Una **Fitness Function Arquitectónica** (Ford, Parsons, Kua y Sadalage, 2022) es una prueba o métrica objetiva, automatizada y ejecutable dentro del pipeline de Integración Continua (CI) que evalúa y protege la integridad de una característica o atributo arquitectónico frente a la degradación silenciosa del software con el paso del tiempo.
+
+**Degradaciones concretas que detectan las nuestras:**
+1. **`fitness/rendimiento.py` (Fitness Function de Rendimiento):**
+   * *Degradación que detecta:* Detecta si una modificación en los modelos de Django introduce consultas N+1 en la base de datos que eleven el tiempo de servicio o si se reduce el número de workers, provocando que el tiempo de respuesta percentil 95 supere el presupuesto contractual de **$p95 > 1.5\text{ segundos}$** ante $20\text{ req/s}$.
+2. **`fitness/disponibilidad.py` (Fitness Function de Disponibilidad y Resiliencia):**
+   * *Degradación que detecta:* Mediante simulación Monte Carlo de 1,000 iteraciones con caídas simuladas de Yape/Plin, detecta si un cambio en el tamaño de la cola o en la política de reintentos provoca que se pierda un solo pedido (**$\text{pedidos\_perdidos} > 0$**), rompiendo la garantía del patrón Outbox (`QA-03`).
+3. **Fitness Function Estructural (`.importlinter` / `import-linter`):**
+   * *Degradación que detecta:* Detecta importaciones prohibidas y dependencias circulares entre los módulos del Monolito Modular (ej. si un desarrollador introduce accidentalmente `from pedidos import ...` dentro del módulo `catalogo` o `notificaciones`), rompiendo la arquitectura en capas y bloqueando el despliegue en GitHub Actions.
+4. **Fitness Function de Seguridad Multitenant (Test Automatizado de RLS):**
+   * *Degradación que detecta:* Detecta si una nueva tabla de productos o pedidos omitió la directiva `ENABLE ROW LEVEL SECURITY` en PostgreSQL, ejecutando una consulta automatizada en CI con el token del Mercado Altiplano y verificando que devuelva estrictamente **0 filas** del Mercado San Camilo (`QA-02`).
+
+---
+
+## 8. ¿Qué propuesta de la IA rechazaron con evidencia? ¿Qué habría pasado si la aceptaban sin medir?
+
+* **Propuesta de la IA:**
+  Durante la Iteración 1 de ADD (Interacción 2 de la bitácora de Lab 08), el asistente de IA afirmó que para soportar la expansión concurrente de los tres mercados (San Camilo, Altiplano y Río Seco), la arquitectura de Monolito Modular del Lab 04 colapsaría, y recomendó migrar de inmediato a una arquitectura de **Microservicios orquestada en clúster Kubernetes (EKS)** con bases de datos independientes por mercado.
+
+* **Evidencia Cuantitativa con la que se rechazó:**
+  El equipo ejecutó el script de simulación matemática $M/M/c$ (`fitness/rendimiento.py`) modelando la carga total agregada de los tres mercados en hora pico ($20\text{ req/s}$). La simulación demostró con datos matemáticos rigurosos que:
+  * El Monolito Modular con 4 workers atiende el tráfico con una **utilización de CPU de apenas el 35%** en el VPS actual.
+  * Con la caché en Redis activa (Hit Rate = 60%), el tiempo de espera en cola es virtualmente nulo ($W_q = 0.0001\text{ s}$) y el $p95$ es de apenas **$72.4\text{ ms}$**, muy por debajo del límite de $1.5\text{ s}$.
+
+* **¿Qué habría pasado si la aceptaban sin medir?**
+  1. **Fracaso en el plazo del proyecto (`R-01`):** El equipo habría consumido semanas configurando clústeres Kubernetes, mallas de servicios (*Service Mesh*), pipelines de CI/CD distribuidos y transacciones distribuidas con patrón Saga.
+  2. **Violación presupuestal (`R-03`):** El costo de múltiples nodos en la nube y balanceadores gestionados habría multiplicado por cinco el presupuesto mensual del mercado.
+  3. **Colapso por memoria RAM:** Intentar correr clústeres de microservicios sobre el VPS único habría saturado la memoria RAM, desatando el *OOM Killer* de Linux y dejando la plataforma completamente inoperativa.
