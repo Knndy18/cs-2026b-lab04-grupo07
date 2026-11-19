@@ -1,0 +1,52 @@
+name: Prompts CI (Promptfoo & Integración)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  eval-prompts:
+    name: Evaluación de Prompts e Integración E6/E7
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias de Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install jsonschema pytest pyyaml
+
+      - name: Ejecutar pruebas unitarias de integración (E6)
+        run: |
+          PYTHONPATH=.:src pytest -v tests/test_generador_criterios.py
+
+      - name: Instalar promptfoo
+        run: |
+          npm install -g promptfoo@latest
+
+      - name: Ejecutar evaluación automatizada con promptfoo (Tarea A)
+        working-directory: prompts/criterios
+        run: |
+          npx promptfoo eval --no-cache -o resultados.json -o resultados.html || true
+
+      - name: Subir artefactos de evaluación
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-promptfoo-criterios
+          path: |
+            prompts/criterios/resultados.json
+            prompts/criterios/resultados.html
