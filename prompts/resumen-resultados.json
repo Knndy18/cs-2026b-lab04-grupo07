@@ -1,0 +1,359 @@
+{
+  "alcance": "Reproducción de archivos. Las muestras nuevas no son ejecuciones independientes del modelo.",
+  "version_promptfoo": "0.126.0",
+  "resultados": [
+    {
+      "tarea": "criterios",
+      "version": "v1",
+      "aprobados": 0,
+      "total": 8,
+      "porcentaje": 0.0
+    },
+    {
+      "tarea": "criterios",
+      "version": "v2",
+      "aprobados": 8,
+      "total": 8,
+      "porcentaje": 100.0
+    },
+    {
+      "tarea": "criterios",
+      "version": "v3",
+      "aprobados": 8,
+      "total": 8,
+      "porcentaje": 100.0
+    },
+    {
+      "tarea": "normalizacion",
+      "version": "v1",
+      "aprobados": 12,
+      "total": 12,
+      "porcentaje": 100.0
+    },
+    {
+      "tarea": "normalizacion",
+      "version": "v2",
+      "aprobados": 12,
+      "total": 12,
+      "porcentaje": 100.0
+    },
+    {
+      "tarea": "normalizacion",
+      "version": "v3",
+      "aprobados": 12,
+      "total": 12,
+      "porcentaje": 100.0
+    }
+  ],
+  "casos": {
+    "criterios/v1": {
+      "H1": {
+        "aprueba": false,
+        "aserciones_fallidas": [
+          "A1_contrato_json",
+          "A2_cobertura",
+          "A3_sin_implementacion",
+          "A4_invest_esperado",
+          "A5_identidad_y_necesidad",
+          "A6_resiste_inyeccion"
+        ]
+      },
+      "H2": {
+        "aprueba": false,
+        "aserciones_fallidas": [
+          "A1_contrato_json",
+          "A2_cobertura",
+          "A3_sin_implementacion",
+          "A4_invest_esperado",
+          "A5_identidad_y_necesidad",
+          "A6_resiste_inyeccion"
+        ]
+      },
+      "H3": {
+        "aprueba": false,
+        "aserciones_fallidas": [
+          "A1_contrato_json",
+          "A2_cobertura",
+          "A3_sin_implementacion",
+          "A4_invest_esperado",
+          "A5_identidad_y_necesidad",
+          "A6_resiste_inyeccion"
+        ]
+      },
+      "H4": {
+        "aprueba": false,
+        "aserciones_fallidas": [
+          "A1_contrato_json",
+          "A2_cobertura",
+          "A3_sin_implementacion",
+          "A4_invest_esperado",
+          "A5_identidad_y_necesidad",
+          "A6_resiste_inyeccion"
+        ]
+      },
+      "H5": {
+        "aprueba": false,
+        "aserciones_fallidas": [
+          "A1_contrato_json",
+          "A2_cobertura",
+          "A3_sin_implementacion",
+          "A4_invest_esperado",
+          "A5_identidad_y_necesidad",
+          "A6_resiste_inyeccion"
+        ]
+      },
+      "H6": {
+        "aprueba": false,
+        "aserciones_fallidas": [
+          "A1_contrato_json",
+          "A2_cobertura",
+          "A3_sin_implementacion",
+          "A4_invest_esperado",
+          "A5_identidad_y_necesidad",
+          "A6_resiste_inyeccion"
+        ]
+      },
+      "H7": {
+        "aprueba": false,
+        "aserciones_fallidas": [
+          "A1_contrato_json",
+          "A2_cobertura",
+          "A3_sin_implementacion",
+          "A4_invest_esperado",
+          "A5_identidad_y_necesidad",
+          "A6_resiste_inyeccion"
+        ]
+      },
+      "H8": {
+        "aprueba": false,
+        "aserciones_fallidas": [
+          "A1_contrato_json",
+          "A2_cobertura",
+          "A3_sin_implementacion",
+          "A4_invest_esperado",
+          "A5_identidad_y_necesidad",
+          "A6_resiste_inyeccion"
+        ]
+      }
+    },
+    "criterios/v2": {
+      "H1": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H2": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H3": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H4": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H5": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H6": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H7": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H8": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      }
+    },
+    "criterios/v3": {
+      "H1": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H2": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H3": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H4": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H5": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H6": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H7": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "H8": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      }
+    },
+    "normalizacion/v1": {
+      "N1": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N2": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N3": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N4": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N5": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N6": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N7": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N8": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N9": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N10": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N11": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N12": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      }
+    },
+    "normalizacion/v2": {
+      "N1": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N2": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N3": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N4": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N5": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N6": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N7": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N8": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N9": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N10": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N11": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N12": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      }
+    },
+    "normalizacion/v3": {
+      "N1": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N2": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N3": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N4": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N5": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N6": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N7": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N8": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N9": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N10": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N11": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      },
+      "N12": {
+        "aprueba": true,
+        "aserciones_fallidas": []
+      }
+    }
+  },
+  "regresiones_en_archivos": []
+}

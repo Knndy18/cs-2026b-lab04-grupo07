@@ -1,0 +1,1 @@
+{"caso_id":"N1","resultados":[{"entrada":"papa blanca","producto_id":"P01","nombre":"papa blanca"}]}

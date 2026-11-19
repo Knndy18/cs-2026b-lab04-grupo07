@@ -1,0 +1,1 @@
+{"caso_id":"N2","resultados":[{"entrada":"  QUESO   PARIA  ","producto_id":"P03","nombre":"queso paria"},{"entrada":"LIMON","producto_id":"P06","nombre":"limón"}]}

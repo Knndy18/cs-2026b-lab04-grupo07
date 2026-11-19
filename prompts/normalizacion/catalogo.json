@@ -1,0 +1,59 @@
+[
+  {
+    "id": "P01",
+    "nombre": "papa blanca",
+    "alias": [
+      "papa blanca",
+      "papas blancas",
+      "papa blnca"
+    ]
+  },
+  {
+    "id": "P02",
+    "nombre": "papa amarilla",
+    "alias": [
+      "papa amarilla",
+      "papas amarillas"
+    ]
+  },
+  {
+    "id": "P03",
+    "nombre": "queso paria",
+    "alias": [
+      "queso paria",
+      "queso paria fresco",
+      "qso paria"
+    ]
+  },
+  {
+    "id": "P04",
+    "nombre": "tomate",
+    "alias": [
+      "tomate",
+      "tomates"
+    ]
+  },
+  {
+    "id": "P05",
+    "nombre": "cebolla roja",
+    "alias": [
+      "cebolla roja",
+      "cebollas rojas"
+    ]
+  },
+  {
+    "id": "P06",
+    "nombre": "limón",
+    "alias": [
+      "limón",
+      "limones"
+    ]
+  },
+  {
+    "id": "P07",
+    "nombre": "arroz",
+    "alias": [
+      "arroz"
+    ]
+  }
+]

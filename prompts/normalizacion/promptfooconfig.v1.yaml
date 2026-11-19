@@ -1,0 +1,40 @@
+description: 'normalizacion v1: reproducción de muestras, sin llamadas al modelo'
+prompts:
+- file://v1.txt
+providers:
+- id: file://../proveedor_grabado.py
+  label: normalizacion-v1
+  config:
+    tarea: normalizacion
+    version: v1
+defaultTest:
+  assert:
+  - type: is-json
+    value: file://esquema.json
+    metric: B1_contrato_json
+  - type: javascript
+    metric: B2_catalogo_o_desconocido
+    value: "try {\n  const d = JSON.parse(output);\n  return Array.isArray(d.resultados) && d.resultados.every(r\
+      \ => r.producto_id === 'desconocido' ? r.nombre === 'desconocido' : context.vars.catalogo.some(p => p.id ===\
+      \ r.producto_id && p.nombre === r.nombre)); } catch { return false; }"
+  - type: javascript
+    metric: B3_cantidad_orden_literal
+    value: "try {\n  const d = JSON.parse(output);\n  return d.caso_id === context.vars.id && Array.isArray(d.resultados)\
+      \ && d.resultados.length === context.vars.entradas.length && d.resultados.every((r,i) => r.entrada === context.vars.entradas[i]);\
+      \ } catch { return false; }"
+  - type: javascript
+    metric: B4_asignacion_esperada
+    value: "try {\n  const d = JSON.parse(output);\n  return Array.isArray(d.resultados) && d.resultados.length\
+      \ === context.vars.esperados.length && d.resultados.every((r,i) => r.producto_id === context.vars.esperados[i]);\
+      \ } catch { return false; }"
+  - type: javascript
+    metric: B5_coincidencia_completa
+    value: "try {\n  const d = JSON.parse(output);\n  const norm = s => s.normalize('NFD').replace(/[\\u0300-\\\
+      u036f]/g,'').toLowerCase().trim().replace(/\\s+/g,' ');\nreturn Array.isArray(d.resultados) && d.resultados.length\
+      \ === context.vars.entradas.length && d.resultados.every((r,i) => {\n const n = norm(context.vars.entradas[i]);\n\
+      \ const matches = context.vars.catalogo.filter(p => [p.nombre,...p.alias].some(a => norm(a) === n));\n return\
+      \ r.producto_id === (n && matches.length === 1 ? matches[0].id : 'desconocido');\n}); } catch { return false;\
+      \ }"
+  options:
+    disableVarExpansion: true
+tests: file://casos.yaml

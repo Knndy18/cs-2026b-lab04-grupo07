@@ -1,0 +1,401 @@
+{
+  "fecha_local": "2026-11-19",
+  "zona_horaria": "America/Lima",
+  "base_git": "4dc2e2f",
+  "generacion_nueva": "Muestras de referencia preparadas por Codex en esta sesión. Sin llamadas independientes a un proveedor LLM. No hay temperatura ni identificador de ejecución del modelo que se puedan acreditar.",
+  "normalizacion": "Las mismas doce muestras se reutilizan en v1, v2 y v3. No representan tres generaciones.",
+  "evaluacion": "promptfoo 0.126.0 ejecutado de verdad con proveedor grabado y sin caché. Los reportes originales se conservan en resultados.",
+  "estado_e3_e4": "Implementación y comprobación con muestras preparadas. Evidencia experimental pendiente.",
+  "archivos": [
+    {
+      "ruta": "prompts/criterios/casos.yaml",
+      "origen": "archivo de trabajo",
+      "sha256": "ea6d6391b593d2a2e2da1175c61b21b3cdcf38091f47e5b1b27c704a8304350f"
+    },
+    {
+      "ruta": "prompts/criterios/esquema.json",
+      "origen": "archivo de trabajo",
+      "sha256": "e79dbf97099d3c08dbc3fc45aed4c2e8571e4135867e092b87f4355dcf2c332a"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v1/H1.txt",
+      "origen": "respuesta heredada del repositorio 4dc2e2f",
+      "sha256": "cae174e23daf69853e83f96d7405fea211a1082c2351b2b6d97b9c91d9687371"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v1/H2.txt",
+      "origen": "respuesta heredada del repositorio 4dc2e2f",
+      "sha256": "6d5ef5094a145d14b6047ad02d7211be7f748498fc6919f6a692b0afa7521f16"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v1/H3.txt",
+      "origen": "respuesta heredada del repositorio 4dc2e2f",
+      "sha256": "7d2cda58c85e39b79b2aa2539f6cdabdba1a6e51b58f402ee6517ee916e68b6e"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v1/H4.txt",
+      "origen": "respuesta heredada del repositorio 4dc2e2f",
+      "sha256": "1d728724a5ebb62a6c7e9808766a4f9f2caa192ec07876a5ed55ed1d046d96e0"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v1/H5.txt",
+      "origen": "respuesta heredada del repositorio 4dc2e2f",
+      "sha256": "ea51c595ad1c355838db3481a980026a13eb6674bb1c351afc559744d9d96c8a"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v1/H6.txt",
+      "origen": "respuesta heredada del repositorio 4dc2e2f",
+      "sha256": "70b63b95a644c9624ba4cb40fed974bd5eb58d6d9c7a5f33b32ea54f4bae272e"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v1/H7.txt",
+      "origen": "respuesta heredada del repositorio 4dc2e2f",
+      "sha256": "bdb9bae9109cc2f0dde26a83d9c9d1e04a2070f0199d7e22f115b58e419e5024"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v1/H8.txt",
+      "origen": "respuesta heredada del repositorio 4dc2e2f",
+      "sha256": "993468e4ff2b88ec8b4336b55508e20f8e637ae5c55dfd2de08096e14be75bd6"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v2/H1.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "b11bbce9493f15b9b0ccc0e7123fc6fa70163607df98c63503503d2ddef1b564"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v2/H2.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "56b79643cc12fb216485b5e988bb31107941be8180d2e467ba083f628a8df089"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v2/H3.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "3a9ff33170d94021bf0f411b0503e90ddac1664b22f4b1f1f6e8d51c42e286bc"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v2/H4.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "25c5da817ec716ca3aaa78afbe2bf82d7f707ee7e60ee87ec7901b4369052f6f"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v2/H5.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "a77b312679c82eb3404c539d0a713dc2620b18b06a43a55e24f3bf28704948fb"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v2/H6.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "a221eb70314cf1be39f94d63e98a25111ed05f754534f84ef98919821001dfe5"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v2/H7.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "6ba87b05f9441fc858eed2351c5de7b6d521bf2aa387a3d872b8e0d6cdb59975"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v2/H8.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "13ad1d282aca543368c9acf00dc96f095992b92c1a2331b1a016396899d24dae"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v3/H1.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "3cffc8922834eefbb6ca631418369fb9f22725459210634a1d42c2392ef68a56"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v3/H2.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "8ba6a19975bbba0a732c2542718ceefb36ae323b6d9b212afe0ca594dee67886"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v3/H3.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "d1461b98b92b9298c753b10a999b3b3f989b2f9c4ac44cb6c0ebb2b082fd0666"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v3/H4.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "a5be1b4a1b38452d404c3bd9b587fcae015d62347eb87a4ca5f8c6b84bebe051"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v3/H5.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "f43780a2dcd6908a43fbcad4ab51b648323f542b5c8ead9f6d8686f547fa2435"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v3/H6.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "fa32c468d021ae1a47e93a47daf6106b2405353209f22510fc5dff7428a8e304"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v3/H7.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "2680c12a874240ec1732cee5640479666feb12ba3f673e90f32081ecdb8168cf"
+    },
+    {
+      "ruta": "prompts/criterios/grabaciones/v3/H8.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "39b1e6f4ee9673d43287554b02f38dad6bf80829c5afbc3bc79da746982a3616"
+    },
+    {
+      "ruta": "prompts/criterios/promptfooconfig.v1.yaml",
+      "origen": "archivo de trabajo",
+      "sha256": "37aa298363fc41cede769a3ae4bb800dcfdb33e6d6d8519f7a715ac6b0a85e0e"
+    },
+    {
+      "ruta": "prompts/criterios/promptfooconfig.v2.yaml",
+      "origen": "archivo de trabajo",
+      "sha256": "191520f83baaa5da8322f51f58cebc46a7d349b8e8efb09ba500ae266882faad"
+    },
+    {
+      "ruta": "prompts/criterios/promptfooconfig.yaml",
+      "origen": "archivo de trabajo",
+      "sha256": "27b8a58986f42ea8b5cd53919499e8aef758eeb1362356d00a76c2109f5cf005"
+    },
+    {
+      "ruta": "prompts/criterios/v1.txt",
+      "origen": "archivo de trabajo",
+      "sha256": "89df3107d903acdc0cca2213130370100e55d25683529e409b939c629507c2c6"
+    },
+    {
+      "ruta": "prompts/criterios/v2.txt",
+      "origen": "archivo de trabajo",
+      "sha256": "f6f77ccb7548f790e179c446fecfb4e5d4c90a4a07908198ecde28db7aef2b14"
+    },
+    {
+      "ruta": "prompts/criterios/v3.1.txt",
+      "origen": "archivo de trabajo",
+      "sha256": "bcd591637a0219be874dc697a71e6ccd4604fad0ad5356100a4292000c5241f3"
+    },
+    {
+      "ruta": "prompts/criterios/v3.txt",
+      "origen": "archivo de trabajo",
+      "sha256": "a619f809854289c0088ab7792a524c1da67e8378bab36c9d5afd8a52cb313dc8"
+    },
+    {
+      "ruta": "prompts/normalizacion/casos.yaml",
+      "origen": "archivo de trabajo",
+      "sha256": "10e2dd75978adfe934766a446d07f223f3f55b1c673a40f1e6f645d71dee4b42"
+    },
+    {
+      "ruta": "prompts/normalizacion/catalogo.json",
+      "origen": "archivo de trabajo",
+      "sha256": "7c0d660e0d25a1afd4ce8272922c8d350aaf296de60d4e75f68945eb3aa25c99"
+    },
+    {
+      "ruta": "prompts/normalizacion/esquema.json",
+      "origen": "archivo de trabajo",
+      "sha256": "6eb52aa9d06c51de6e7d3f08fd2e09c710058174c02871afe752771a2a5402a8"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N1.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "474969046ce82abc001777ed8492bb4e810f4eee58a71c5cd184cd0dd48e479d"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N10.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "1834e98960e4f13b6c896f4a05c1821ebbe083fe09c95639a96105c87b9fa2cd"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N11.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "38a3b75015c0fb46e5eab50fa6c1a6a21aa1de89480c9e18562e86fd36b9e09f"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N12.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "ef7382a3ca8cd97fd536f8a97a49b59a1cd69801ae57b0d6b3fd6341f2fb675a"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N2.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "4b91de976f5bfa718c6e1c3027696506a458dc3ba9d359a4612fbf2046c0ad27"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N3.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "546eaab015823a5a2479d212fc73613c4dddf0d063e470d2abb4f72ea27bf625"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N4.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "17315cd810b7b3525a2e779a936fd231543be12de252c9ea4567d5a5ea8f56ea"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N5.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "5f97e31e975ad48062c88607aee6828e520b785c7ee476d74fb1ea9338b38589"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N6.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "13336bded6b7ed0dc749fdafd02cead6fa7b9c2ea3c823e2cddfd55f62a59eff"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N7.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "67be0ddc66873deed5d902c5bd5d9053457a946851392de23f25d35251c289ee"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N8.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "9c1c55995b868cf9ab79f6de76bc3412570b3e8d92c12d8bc5335587d25d7757"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v1/N9.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "37f70bbf3893c556f7e7356ec1ed9c10d6f2e213d4fa9d942f69bc0a08ad97b9"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N1.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "474969046ce82abc001777ed8492bb4e810f4eee58a71c5cd184cd0dd48e479d"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N10.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "1834e98960e4f13b6c896f4a05c1821ebbe083fe09c95639a96105c87b9fa2cd"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N11.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "38a3b75015c0fb46e5eab50fa6c1a6a21aa1de89480c9e18562e86fd36b9e09f"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N12.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "ef7382a3ca8cd97fd536f8a97a49b59a1cd69801ae57b0d6b3fd6341f2fb675a"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N2.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "4b91de976f5bfa718c6e1c3027696506a458dc3ba9d359a4612fbf2046c0ad27"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N3.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "546eaab015823a5a2479d212fc73613c4dddf0d063e470d2abb4f72ea27bf625"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N4.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "17315cd810b7b3525a2e779a936fd231543be12de252c9ea4567d5a5ea8f56ea"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N5.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "5f97e31e975ad48062c88607aee6828e520b785c7ee476d74fb1ea9338b38589"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N6.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "13336bded6b7ed0dc749fdafd02cead6fa7b9c2ea3c823e2cddfd55f62a59eff"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N7.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "67be0ddc66873deed5d902c5bd5d9053457a946851392de23f25d35251c289ee"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N8.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "9c1c55995b868cf9ab79f6de76bc3412570b3e8d92c12d8bc5335587d25d7757"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v2/N9.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "37f70bbf3893c556f7e7356ec1ed9c10d6f2e213d4fa9d942f69bc0a08ad97b9"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N1.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "474969046ce82abc001777ed8492bb4e810f4eee58a71c5cd184cd0dd48e479d"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N10.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "1834e98960e4f13b6c896f4a05c1821ebbe083fe09c95639a96105c87b9fa2cd"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N11.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "38a3b75015c0fb46e5eab50fa6c1a6a21aa1de89480c9e18562e86fd36b9e09f"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N12.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "ef7382a3ca8cd97fd536f8a97a49b59a1cd69801ae57b0d6b3fd6341f2fb675a"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N2.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "4b91de976f5bfa718c6e1c3027696506a458dc3ba9d359a4612fbf2046c0ad27"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N3.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "546eaab015823a5a2479d212fc73613c4dddf0d063e470d2abb4f72ea27bf625"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N4.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "17315cd810b7b3525a2e779a936fd231543be12de252c9ea4567d5a5ea8f56ea"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N5.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "5f97e31e975ad48062c88607aee6828e520b785c7ee476d74fb1ea9338b38589"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N6.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "13336bded6b7ed0dc749fdafd02cead6fa7b9c2ea3c823e2cddfd55f62a59eff"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N7.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "67be0ddc66873deed5d902c5bd5d9053457a946851392de23f25d35251c289ee"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N8.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "9c1c55995b868cf9ab79f6de76bc3412570b3e8d92c12d8bc5335587d25d7757"
+    },
+    {
+      "ruta": "prompts/normalizacion/grabaciones/v3/N9.txt",
+      "origen": "muestra sintética de referencia redactada por Codex, no captura independiente",
+      "sha256": "37f70bbf3893c556f7e7356ec1ed9c10d6f2e213d4fa9d942f69bc0a08ad97b9"
+    },
+    {
+      "ruta": "prompts/normalizacion/promptfooconfig.v1.yaml",
+      "origen": "archivo de trabajo",
+      "sha256": "c1f4ce3d8454c8652c89989ed20618fa040a573538f3744f8e2bf0e7b81de3a1"
+    },
+    {
+      "ruta": "prompts/normalizacion/promptfooconfig.v2.yaml",
+      "origen": "archivo de trabajo",
+      "sha256": "b58b5331ba00bb7bf6813297b29551f423ab99436947dc0f0af02569edb00c35"
+    },
+    {
+      "ruta": "prompts/normalizacion/promptfooconfig.yaml",
+      "origen": "archivo de trabajo",
+      "sha256": "51323088a66f5f19502efca10229b940fabf25e65f11521967e9a19a5feb1e2c"
+    },
+    {
+      "ruta": "prompts/normalizacion/v1.txt",
+      "origen": "archivo de trabajo",
+      "sha256": "eaf3605e7a848454317fdea0eba67aaf16e00c04b6c026df47ff1cb41ee0b576"
+    },
+    {
+      "ruta": "prompts/normalizacion/v2.txt",
+      "origen": "archivo de trabajo",
+      "sha256": "f6838378c606df678f7dd28a6d10e17915fa226d968475c9fd3816c94564f569"
+    },
+    {
+      "ruta": "prompts/normalizacion/v3.txt",
+      "origen": "archivo de trabajo",
+      "sha256": "368a6ceb3c4f9eb38699bb0b3dc8c3c86cc75b1c9ad7c5107e3712ef377dea24"
+    }
+  ]
+}
