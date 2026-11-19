@@ -1,0 +1,3 @@
+Criterios de aceptación:
+- Cuando el pago es confirmado, el sistema envía una notificación push al celular del comerciante.
+- El comerciante puede abrir la app y ver el detalle de los productos solicitados.
