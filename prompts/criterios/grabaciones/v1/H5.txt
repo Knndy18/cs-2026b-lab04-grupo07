@@ -1,0 +1,3 @@
+Criterios de aceptación:
+1. Existe un selector de mercados con las opciones San Camilo, Altiplano y Río Seco.
+2. Al elegir un mercado, la lista se filtra mostrando únicamente los puestos de esa sede.
