@@ -1,0 +1,4 @@
+Criterios de aceptación:
+1. Se crea la tabla outbox en PostgreSQL con las columnas id, payload y estado.
+2. Se habilita Row-Level Security (RLS) filtrando por la columna mercado_id.
+3. Se verifican permisos de lectura y escritura por rol.
