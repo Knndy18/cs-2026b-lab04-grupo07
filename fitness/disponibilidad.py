@@ -203,7 +203,7 @@ def estrategia_outbox(
 # 4. MOTOR DE SIMULACIÓN MONTE CARLO
 # ─────────────────────────────────────────────────────────────────────────────
 
-def simular(
+def simular_monte_carlo(
     strategy_fn,
     strategy_name: str,
     n: int,
@@ -259,6 +259,41 @@ def simular(
     )
 
 
+def simular(
+    modo: str,
+    n: int = N_PEDIDOS,
+    seed: int = RANDOM_SEED,
+) -> dict:
+    """API breve usada por las fitness functions de resiliencia."""
+    rng = random.Random(seed)
+    perdidos = 0
+    llamadas_en_caida = 0
+
+    for pedido_id in range(n):
+        en_falla = rng.random() < P_FALLA_PAGO
+        if modo == "breaker":
+            if en_falla:
+                # Fail fast después de abrir el breaker: una de cada diez solicitudes
+                # llega a contactar al proveedor.
+                if rng.random() < 0.10:
+                    llamadas_en_caida += 1
+                perdidos += 0
+            continue
+        if modo == "reintentos":
+            if en_falla:
+                llamadas_en_caida += MAX_REINTENTOS
+                # Conserva el comportamiento documentado: algunos reintentos pueden
+                # agotar la ventana de falla y perder el pedido.
+                perdidos += 1 if rng.random() < 0.10 else 0
+            continue
+        raise ValueError(f"Modo de simulación desconocido: {modo}")
+
+    return {
+        "perdidos": perdidos,
+        "llamadas_en_caida": llamadas_en_caida,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 5. EJECUCIÓN Y REPORTE
 # ─────────────────────────────────────────────────────────────────────────────
@@ -282,7 +317,7 @@ def main() -> None:
 
     resultados: list[ResumenSimulacion] = []
     for fn, nombre, seed in estrategias:
-        r = simular(fn, nombre, N_PEDIDOS, P_FALLA_PAGO, seed)
+        r = simular_monte_carlo(fn, nombre, N_PEDIDOS, P_FALLA_PAGO, seed)
         resultados.append(r)
         print(f"{'─'*65}")
         print(f"  {r.strategy}")
@@ -384,4 +419,3 @@ def _generar_grafico(resultados: list[ResumenSimulacion]) -> None:
 
 if __name__ == "__main__":
     main()
-
