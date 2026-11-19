@@ -1,0 +1,4 @@
+Criterios de aceptación:
+1. Se muestra un campo para ingresar el código de operación de Yape o Plin.
+2. Al enviar el formulario, se llama al endpoint de validación de pagos.
+3. El estado del pedido cambia a pagado.
