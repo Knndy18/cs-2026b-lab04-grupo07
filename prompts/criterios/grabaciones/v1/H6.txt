@@ -1,0 +1,4 @@
+Criterios de aceptación:
+1. La aplicación debe cargar en menos de 1 segundo.
+2. Los botones deben ser grandes y fáciles de entender para adultos mayores.
+3. La interfaz debe ser amigable e intuitiva.
