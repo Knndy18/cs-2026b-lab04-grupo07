@@ -1,0 +1,4 @@
+Criterios de aceptación:
+1. El comerciante puede ingresar el nombre del producto, unidad de medida y precio por kilo.
+2. Los datos se guardan correctamente en la base de datos PostgreSQL.
+3. El producto aparece inmediatamente en el catálogo de San Camilo.
