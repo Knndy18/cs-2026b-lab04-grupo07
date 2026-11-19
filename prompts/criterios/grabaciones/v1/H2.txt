@@ -1,0 +1,4 @@
+Criterios de aceptación:
+- El usuario puede añadir productos de diferentes puestos al carrito.
+- El sistema agrupa los ítems y calcula un solo costo de envío.
+- Se genera una única orden de delivery.
