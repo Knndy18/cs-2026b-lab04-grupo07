@@ -328,6 +328,39 @@ La integridad de la arquitectura se protege contra la degradación mediante prue
   - [ADR-006: Índice y Caché Redis para Catálogo (QA-01)](docs/architecture/adr/ADR-006-indice-y-cache-catalogo.md)
   - [ADR-007: Circuit Breaker y Patrón Outbox para Resiliencia en Pagos (QA-03)](docs/architecture/adr/ADR-007-circuit-breaker-y-outbox.md)
   - [ADR-008: Aislamiento Multitenencia mediante PostgreSQL RLS (QA-04)](docs/architecture/adr/ADR-008-aislamiento-multitenant-rls.md)
+
+---
+
+## Prompt engineering (Lab 09)
+
+En este laboratorio tratamos los prompts como artefactos de software versionados en Git, con contratos de salida estrictos (`JSON Schema`), datasets de pruebas (`casos.yaml`), aserciones automáticas mediante `promptfoo` y defensa en capas contra inyección de prompts (**OWASP LLM01**).
+
+### 1. Evolución y Tasa de Aprobación
+
+#### Tarea A: Generación de Criterios de Aceptación Gherkin (`prompts/criterios/`)
+| Versión | Técnicas y Patrones Aplicados | Casos Aprobados | Tasa de Aprobación | Regresiones | Evolución y Hallazgos |
+|---|---|---:|:---:|:---:|---|
+| **`v1`** (Línea base) | Zero-shot simple sin formato ni restricciones | 0 / 8 | **0.00%** | — | Responde en texto libre (falla `A1` y `A2`), menciona detalles técnicos (`A3`), inventa criterios en historias no INVEST (`A4`) y obedece la inyección `H8` (`A5`). |
+| **`v2`** | Persona + Contexto + Template JSON + Few-Shot (`EJ1`, `EJ2`) + Cognitive Verifier + Delimitadores `<historia>` | 8 / 8 | **100.00%** | Ninguna | Supera la meta del 85%. Cumple el esquema JSON (`A1`), distingue casos válidos de no INVEST (`A4`) y bloquea la inyección básica (`A5`). |
+| **`v3`** | v2 + Revisión de Cobertura explícita + Endurecimiento anti-inyección y anti-fuga de prompt | 8 / 8 | **100.00%** | Ninguna | Refuerza bordes específicos (stock multipuesto, mercados vacíos, constancias sin validar) y blindaje contra ataques avanzados de inyección y extracción de reglas. |
+
+#### Tarea B: Normalización de Productos del Catálogo (`prompts/normalizacion/`)
+| Versión | Casos Aprobados | Tasa de Aprobación | Regresiones | Observaciones |
+|---|---:|:---:|:---:|---|
+| **`v1`** | 12 / 12 | **100.00%** | — | Asigna entradas de comerciantes a productos válidos del catálogo o `"desconocido"` según contrato. |
+| **`v2`** | 12 / 12 | **100.00%** | Ninguna | Mantiene el cumplimiento total sobre las muestras de referencia. |
+| **`v3`** | 12 / 12 | **100.00%** | Ninguna | Mantiene el 100% sin regresiones. |
+
+### 2. Gráfico de Resultados de Evaluación
+
+![Resultados de Evaluación promptfoo - Lab 09](docs/architecture/grafico-evals-lab09.png)
+
+### 3. Lecciones Aprendidas
+1. **Un prompt es una especificación ejecutable:** Definir un contrato `JSON Schema` y verificaciones internas (*Cognitive Verifier* y *Revisión de Cobertura*) elimina salidas ambiguas o en texto libre imposibles de integrar en el código.
+2. **Evaluación con evidencia y control de regresiones:** Comparar `v1`, `v2` y `v3` con `promptfoo` permite comprobar objetivamente que cada mejora endurece el comportamiento sin romper casos previamente aprobados.
+3. **Un 100% en muestras de referencia no implica perfección:** Como se advierte en `resultados.md`, aprobar el 100% sobre un conjunto fijo de grabaciones demuestra ausencia de regresiones en ese dataset, pero exige ampliar continuamente los casos de borde y pruebas adversarias frente a un LLM real.
+4. **Defensa en capas (OWASP LLM01):** Combinar delimitadores XML (`<historia>`), instrucciones explícitas contra secuestro de órdenes o revelación de prompt, y validación estricta de salida en Python (`jsonschema`) protege el sistema incluso si un usuario inyecta instrucciones maliciosas.
+
 ---
 ## Estado del trabajo
 
