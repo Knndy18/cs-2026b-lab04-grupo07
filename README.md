@@ -412,3 +412,12 @@ En este laboratorio tratamos los prompts como artefactos de software versionados
 | E6: ADRs (006, 007, 008) y actualizacion C4 en Structurizr (workspace.dsl) | Nagin | Completado |
 | E7: Matriz de riesgos mitigados y bitacora de IA en `bitacora-ia.md` | Diego | Completado |
 | E8: README consolidado, Pull Requests y etiquetado Git v0.8-arquitectura | Equipo | Completado |
+| **Laboratorio 09 (`v0.9-prompts`) — Prompts como Codigo, Evals (`promptfoo`) y Seguridad (OWASP LLM01)** | | |
+| E1: Contrato JSON Schema (`esquema.json`) y dataset de criterios (`casos.yaml`) | Diego | Completado |
+| E2: Linea base `v1.txt`, proveedor grabado (`proveedor_grabado.py`) y configuracion `promptfooconfig.yaml` | Diego | Completado |
+| E3: Iteraciones de prompt (`v2.txt`, `v3.txt`) y evaluacion con evidencia (`promptfoo`) | Nagin | Completado |
+| E4: Tarea B — Normalizacion de productos del catalogo (`prompts/<tarea-b>/`) | Nagin | Completado |
+| E5: Red teaming y defensa en capas (`seguridad/red-team.md`) | Kennedy | Completado |
+| E6: Integracion en codigo detras de `ProveedorLLM` (`src/<modulo>/generador_*.py`) y pruebas | Kennedy | Completado |
+| E7: Workflow en CI (`.github/workflows/prompts.yml`), no determinismo y `bitacora-ia.md` | Kennedy | Completado |
+| E8: Seccion en README, grafico de resultados, Pull Requests y etiquetado Git `v0.9-prompts` | Diego / Equipo | Completado |
