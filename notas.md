@@ -1,0 +1,1 @@
+1. Hipótesis Issue 03: el descuadre en liquidar_puesto (src/pedidos/liquidacion.py) se origina por redondeo independiente de retención y neto. Solución: total_neto = round(total_bruto - retencion, 2).

@@ -5,6 +5,26 @@ from dataclasses import dataclass, field
 from typing import Callable, Optional, Set, Tuple
 
 
+def pedir_aprobacion_humana(args: dict) -> bool:
+    """Solicita confirmación por consola mostrando antes/después y repitiendo hasta recibir 's' o 'n'."""
+    ruta = args.get("ruta", "(sin ruta)")
+    antes = args.get("antes", "")
+    despues = args.get("despues", "")
+    print("\n[HUMAN-IN-THE-LOOP] Solicitud de edición de código:")
+    print(f"Archivo: {ruta}")
+    print("--- Fragmento ANTES:")
+    print(antes)
+    print("--- Fragmento DESPUÉS:")
+    print(despues)
+    while True:
+        resp = input("¿Aprobar edición? (s/n): ").strip().lower()
+        if resp == "s":
+            return True
+        elif resp == "n":
+            return False
+        print("Entrada inválida. Ingrese exactamente 's' para aprobar o 'n' para rechazar.")
+
+
 @dataclass
 class Decision:
     permitido: bool
@@ -16,7 +36,8 @@ class Politica:
     """Define las restricciones de seguridad que toda acción propuesta debe atravesar."""
     herramientas_permitidas: Set[str] = field(default_factory=lambda: {
         "listar_archivos", "leer_archivo", "buscar", "ejecutar_pruebas",
-        "editar_archivo", "ejecutar_comando", "ver_cambios"
+        "editar_archivo", "ejecutar_comando", "ver_cambios",
+        "mapa_repo", "anotar", "leer_notas"
     })
     comandos_permitidos: Tuple[str, ...] = (
         r"^python -m pytest\b",

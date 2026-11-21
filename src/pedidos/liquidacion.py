@@ -14,10 +14,9 @@ def liquidar_puesto(ventas_diarias: List[float], retencion_pct: float = 0.035) -
     """
     total_bruto = round(sum(ventas_diarias), 2)
 
-    # BUG (Issue #03): Calcula retención y neto de manera independiente con round() sobre float,
-    # provocando descuadre de 1 céntimo (p. ej. en 11.00: retencion=0.39, neto=10.62 -> suma 11.01 != 11.00)
+    # Corrección: El total neto se obtiene deduciendo directamente la retención redondeada
     retencion = round(total_bruto * retencion_pct, 2)
-    total_neto = round(total_bruto - (total_bruto * retencion_pct), 2)
+    total_neto = round(total_bruto - retencion, 2)
 
     return {
         "total_bruto": total_bruto,

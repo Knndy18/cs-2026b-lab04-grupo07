@@ -1,15 +1,16 @@
-"""Suite de pruebas unitarias para el framework agéntico (E3 - Contrato, Política y Sandbox)."""
+"""Suite de pruebas unitarias para el framework agéntico (E3 - Contrato, Política y Sandbox; E4 - Herramientas y Memoria; E6 - Humano en el circuito)."""
 
 import pathlib
 import pytest
 
 from agentes.agente.contrato import validar_decision
 from agentes.agente.herramientas import Herramientas
-from agentes.agente.politica import Politica
+from agentes.agente.politica import Politica, pedir_aprobacion_humana
 
 HERRAMIENTAS_CATALOGO = {
     "listar_archivos", "leer_archivo", "buscar", "editar_archivo",
-    "ejecutar_pruebas", "ver_cambios", "ejecutar_comando"
+    "ejecutar_pruebas", "ver_cambios", "ejecutar_comando",
+    "mapa_repo", "anotar", "leer_notas"
 }
 
 
@@ -21,6 +22,9 @@ HERRAMIENTAS_CATALOGO = {
     {"pensamiento": "Revisar código", "accion": "leer_archivo", "args": {"ruta": "src/pedidos/servicio.py"}},
     {"pensamiento": "Ejecutar tests", "accion": "ejecutar_pruebas", "args": {}},
     {"pensamiento": "Listar archivos", "accion": "listar_archivos"},
+    {"pensamiento": "Generar mapa de funciones", "accion": "mapa_repo", "args": {"subruta": "src"}},
+    {"pensamiento": "Registrar hipótesis de trabajo", "accion": "anotar", "args": {"texto": "Posible bug de redondeo"}},
+    {"pensamiento": "Consultar notas previas", "accion": "leer_notas", "args": {}},
     {"pensamiento": "Problema resuelto satisfactoriamente", "final": "Se corrigió el cálculo de comisiones."}
 ])
 def test_contrato_decisiones_validas(decision_valida):
@@ -176,3 +180,146 @@ def test_editar_archivo_controla_unicidad_de_fragmento(tmp_path):
     res_ok = sandbox.editar_archivo("codigo.py", "y = 20", "y = 30")
     assert "OK: codigo.py modificado" in res_ok
     assert "y = 30" in p.read_text(encoding="utf-8")
+
+
+# ==============================================================================
+# 4. PRUEBAS TAREA E4: NUEVAS HERRAMIENTAS (mapa_repo, anotar, leer_notas)
+# ==============================================================================
+
+def test_mapa_repo_ast_clases_y_firmas(tmp_path):
+    """mapa_repo recorre los .py del sandbox y extrae clases y funciones con firmas mediante AST."""
+    sub_pkg = tmp_path / "modulo_ventas"
+    sub_pkg.mkdir()
+    archivo = sub_pkg / "operaciones.py"
+    archivo.write_text(
+        "class Factura:\n"
+        "    def procesar(self, monto: float, aplicar_igv: bool = True) -> float:\n"
+        "        return monto * 1.18\n\n"
+        "def calcular_total(pedidos: list, descuento: float = 0.0) -> float:\n"
+        "    return sum(pedidos) - descuento\n",
+        encoding="utf-8"
+    )
+
+    sandbox = Herramientas(raiz=tmp_path)
+    mapa = sandbox.mapa_repo(".")
+
+    assert "[modulo_ventas]" in mapa
+    assert "operaciones.py:" in mapa
+    assert "class Factura:" in mapa
+    assert "def procesar(self, monto: float, aplicar_igv: bool=True) -> float" in mapa
+    assert "def calcular_total(pedidos: list, descuento: float=0.0) -> float" in mapa
+
+
+def test_mapa_repo_manejo_error_sintaxis(tmp_path):
+    """mapa_repo captura SyntaxError devolviéndolo como texto informativo sin propagar excepción."""
+    archivo_malo = tmp_path / "invalido.py"
+    archivo_malo.write_text("def funcion_incompleta(x:\n    pass\n", encoding="utf-8")
+
+    sandbox = Herramientas(raiz=tmp_path)
+    mapa = sandbox.mapa_repo(".")
+
+    assert "invalido.py:" in mapa
+    assert "[Error de sintaxis:" in mapa
+
+
+def test_mapa_repo_sandbox_ruta_fuera(tmp_path):
+    """mapa_repo debe rechazar rutas que intenten escapar del sandbox."""
+    sandbox = Herramientas(raiz=tmp_path)
+    with pytest.raises(PermissionError):
+        sandbox.mapa_repo("../fuera_de_sandbox")
+
+
+def test_memoria_notas_ciclo_completo(tmp_path):
+    """anotar y leer_notas gestionan notas.md dentro del sandbox con numeración ordenada."""
+    sandbox = Herramientas(raiz=tmp_path)
+
+    # 1. Sin notas registradas inicialmente
+    assert sandbox.leer_notas() == "(sin notas registradas)"
+
+    # 2. Agregar dos notas
+    res1 = sandbox.anotar("Hipótesis inicial: revisar src/pedidos/liquidacion.py")
+    assert "OK: nota 1 registrada" in res1
+
+    res2 = sandbox.anotar("Confirmado error en cálculo de retención y neto")
+    assert "OK: nota 2 registrada" in res2
+
+    # 3. Leer notas y verificar formato
+    contenido = sandbox.leer_notas()
+    assert "1. Hipótesis inicial: revisar src/pedidos/liquidacion.py" in contenido
+    assert "2. Confirmado error en cálculo de retención y neto" in contenido
+
+    # 4. El archivo físico existe dentro del sandbox
+    notas_file = tmp_path / "notas.md"
+    assert notas_file.is_file()
+
+
+def test_memoria_notas_validacion_texto_vacio(tmp_path):
+    """anotar debe validar que el argumento sea una cadena no vacía."""
+    sandbox = Herramientas(raiz=tmp_path)
+    assert "ERROR: 'texto' debe ser una cadena no vacía" in sandbox.anotar("")
+    assert "ERROR: 'texto' debe ser una cadena no vacía" in sandbox.anotar("   ")
+    assert "ERROR: 'texto' debe ser una cadena no vacía" in sandbox.anotar(None)
+
+    # Verifica que no se creó notas.md con contenido vacío
+    assert sandbox.leer_notas() == "(sin notas registradas)"
+
+
+def test_catalogo_incluye_nuevas_herramientas(tmp_path):
+    """El catálogo de herramientas debe incluir descripciones completas para mapa_repo, anotar y leer_notas."""
+    sandbox = Herramientas(raiz=tmp_path)
+    cat = sandbox.catalogo()
+    assert "mapa_repo" in cat
+    assert "anotar" in cat
+    assert "leer_notas" in cat
+    assert "AST" in cat["mapa_repo"] or "ast" in cat["mapa_repo"]
+
+
+# ==============================================================================
+# 5. PRUEBAS TAREA E6: APROBACIÓN HUMANA EN EL CIRCUITO
+# ==============================================================================
+
+def test_aprobacion_humana_reintenta_entradas_invalidas_hasta_s(monkeypatch):
+    """pedir_aprobacion_humana ignora respuestas inválidas y repite hasta obtener 's' -> True."""
+    entradas = iter(["x", "", "si", "S "])
+    monkeypatch.setattr("builtins.input", lambda prompt: next(entradas))
+
+    args_edicion = {
+        "ruta": "src/pedidos/comisiones.py",
+        "antes": "comision = 5.0",
+        "despues": "comision = 3.5"
+    }
+    resultado = pedir_aprobacion_humana(args_edicion)
+    assert resultado is True
+
+
+def test_aprobacion_humana_reintenta_entradas_invalidas_hasta_n(monkeypatch):
+    """pedir_aprobacion_humana repite hasta obtener 'n' -> False."""
+    entradas = iter(["tal vez", "123", "N"])
+    monkeypatch.setattr("builtins.input", lambda prompt: next(entradas))
+
+    args_edicion = {
+        "ruta": "src/pedidos/comisiones.py",
+        "antes": "comision = 5.0",
+        "despues": "comision = 3.5"
+    }
+    resultado = pedir_aprobacion_humana(args_edicion)
+    assert resultado is False
+
+
+def test_politica_rechazo_humano_bloquea_edicion(monkeypatch, tmp_path):
+    """Cuando el humano rechaza ('n'), la política bloquea la acción con el motivo exacto."""
+    monkeypatch.setattr("builtins.input", lambda prompt: "n")
+
+    p = Politica(aprobar_edicion=pedir_aprobacion_humana)
+    v = p.evaluar("editar_archivo", {"ruta": "src/pedidos/catalogo.py", "antes": "a", "despues": "b"}, paso=1)
+    assert not v.permitido
+    assert v.motivo == "El revisor humano rechazó la edición"
+
+
+def test_politica_aprobacion_humana_permite_edicion(monkeypatch, tmp_path):
+    """Cuando el humano aprueba ('s'), la política autoriza la edición."""
+    monkeypatch.setattr("builtins.input", lambda prompt: "s")
+
+    p = Politica(aprobar_edicion=pedir_aprobacion_humana)
+    v = p.evaluar("editar_archivo", {"ruta": "src/pedidos/catalogo.py", "antes": "a", "despues": "b"}, paso=1)
+    assert v.permitido
