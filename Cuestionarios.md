@@ -530,3 +530,107 @@ Una **Fitness Function Arquitectónica** (Ford, Parsons, Kua y Sadalage, 2022) e
   1. **Fracaso en el plazo del proyecto (`R-01`):** El equipo habría consumido semanas configurando clústeres Kubernetes, mallas de servicios (*Service Mesh*), pipelines de CI/CD distribuidos y transacciones distribuidas con patrón Saga.
   2. **Violación presupuestal (`R-03`):** El costo de múltiples nodos en la nube y balanceadores gestionados habría multiplicado por cinco el presupuesto mensual del mercado.
   3. **Colapso por memoria RAM:** Intentar correr clústeres de microservicios sobre el VPS único habría saturado la memoria RAM, desatando el *OOM Killer* de Linux y dejando la plataforma completamente inoperativa.
+
+---
+
+# Laboratorio 10: Sistemas agénticos en la construcción de software
+
+## 1. ¿Qué diferencia a un agente de un flujo de trabajo fijo? Dé un ejemplo de su proyecto en el que un flujo de trabajo sea mejor opción.
+
+### Diferencia Conceptual y Operativa
+La distinción fundamental radica en **quién gobierna el flujo de control y la toma de decisiones** durante la ejecución (Anthropic, 2024; Albada, 2025):
+
+* **Flujo de trabajo fijo (*Workflow*):**
+  * La secuencia de pasos, bifurcaciones condicionales, reintentos y llamadas a funciones están **estáticamente codificados por el programador** mediante estructuras tradicionales (`if/else`, bucles, canalizaciones DAG).
+  * Si se incorpora un modelo de lenguaje (LLM), este opera exclusivamente como un componente de transformación o extracción puntual (por ejemplo, resumir un texto o clasificar una categoría predeterminada) dentro de una caja fija.
+  * *Ventajas:* Comportamiento 100% determinista, costo computacional mínimo, latencia baja y predecible, y facilidad absoluta de pruebas unitarias.
+
+* **Agente de IA:**
+  * El sistema recibe un **objetivo de alto nivel** (p. ej., "reproducir y corregir el Issue #01 en el código").
+  * El modelo de lenguaje actúa como el motor de razonamiento central que **decide de forma autónoma y dinámica qué acciones tomar**, qué herramientas invocar, qué argumentos suministrar y en qué orden ejecutarlas (Grootendorst & Alammar, 2026, cap. 1).
+  * Opera en un **bucle cerrado ReAct (Pensamiento $\to$ Acción $\to$ Observación)**: evalúa el resultado retornado por el entorno (la salida de una prueba, el diff de un archivo o un error de ejecución) y reformula su siguiente paso hasta declarar cumplido el objetivo o agotar su presupuesto de pasos.
+
+### Ejemplo en San Camilo en Línea donde un flujo de trabajo fijo es la mejor opción
+En la plataforma **San Camilo en Línea**, el **proceso de cobro transaccional y confirmación de pedidos multipuesto** (`ServicioPedidos.procesar_pedido_multipuesto`) es el caso paradigmático donde un flujo de trabajo fijo es rotundamente superior:
+
+```
+[Cliente confirma Carrito] 
+       ↓
+[Validar estado BORRADOR y líneas no vacías]
+       ↓
+[Calcular subtotal + tarifa delivery por distrito]
+       ↓
+[Invocar pasarela mediante YapeAdapter (Strategy)]
+       ↓
+[Si aprobado: estado = PAGADO, registrar outbox, emitir confirmación WhatsApp]
+[Si rechazado: estado = CANCELADO]
+```
+
+**Justificación técnica:**
+1. **Determinismo financiero estricto:** El cálculo de tarifas y la invocación de la API de Yape no admiten creatividad ni ambigüedad probabilística. Un agente autónomo podría alucinar un paso intermedio o alterar el monto a transferir.
+2. **Latencia y SLA:** Un flujo fijo se ejecuta en menos de **$150\text{ ms}$**; un agente autónomo intercalando llamadas al LLM demandaría entre 5 y 15 segundos por turno, destruyendo la experiencia de usuario en la PWA (violando `QA-01` y el presupuesto $p95 \le 1.5\text{ s}$).
+3. **Costo de infraestructura:** Una función Python compilada cuesta cero llamadas a modelos generativos; delegar un checkout a un agente multiplicaría exponencialmente el consumo de tokens para un equipo con presupuesto reducido (`R-03`).
+
+---
+
+## 2. Elija dos arquetipos de agentes (Sección 1.3) y explique cuál usaría para cada uno de sus tres issues.
+
+### Arquetipos Seleccionados (Albada, 2025, cap. 5; Koenigstein, 2026)
+1. **Arquetipo ReAct (*Reasoning + Acting* - Yao et al., 2023):**
+   Intercala pasos explícitos de razonamiento verbal y ejecución de herramientas en un bucle adaptativo. Es el patrón óptimo para tareas exploratorias donde la localización de la falla, los efectos colaterales y las observaciones intermedias condicionan dinámicamente los siguientes pasos.
+2. **Arquetipo Planificador-Ejecutor (*Plan-and-Solve*):**
+   Desacopla el razonamiento en dos fases: primero un agente planificador genera un plan de pasos estructurado y estático; posteriormente, un agente ejecutor sigue el plan de forma secuencial y acotada. Es ideal para tareas con pasos definidos, reduciendo alucinaciones y minimizando el consumo de tokens de contexto.
+
+### Asignación y Justificación para los Tres Issues de San Camilo en Línea
+
+| Issue | Descripción del problema | Arquetipo elegido | Justificación técnica en el contexto del código |
+|---|---|---|---|
+| **Issue #01** | *Un pedido a varios puestos cobra dos veces la comisión base* (`src/pedidos/comisiones.py`) | **ReAct** | La causa exacta requiere exploración: el agente debe ejecutar las pruebas para observar el fallo inicial (`5.00 != 3.50`), buscar las funciones de cálculo, leer el archivo de comisiones, sortear comentarios engañosos de inyección indirecta (que intentan ejecutar scripts no autorizados con `curl`), editar la fórmula multiplicadora y re-ejecutar las pruebas. La capacidad de observar y reaccionar paso a paso es indispensable. |
+| **Issue #02** | *Producto agotado sigue visible en el catálogo de puestos* (`src/pedidos/catalogo.py`) | **Planificador-Ejecutor** | Es un cambio determinista y de bajo riesgo con pasos previsibles: (1) Localizar la función `obtener_catalogo_visible`, (2) Inspeccionar la condición de filtrado por lista, (3) Añadir la condición `and p.stock_disponible > 0`, y (4) Verificar con `pytest tests/test_issue_02_catalogo.py`. Un plan previo de 4 pasos evita que el agente divague o consuma contexto innecesario. |
+| **Issue #03** | *Error de redondeo en céntimos en liquidación semanal* (`src/pedidos/liquidacion.py`) | **ReAct (con reflexión contable)** | Los errores de redondeo de punto flotante binario (IEEE 754) en sumas financieras a menudo requieren ajustar estrategias: si se redondea cada partida por separado, la suma no cuadra con el bruto. El bucle ReAct permite al agente formular una hipótesis de corrección (p. ej. derivar el neto como `total_bruto - retencion`), ejecutar la prueba de balance exacto de céntimos, y si la invariante contable falla, reflexionar sobre la discrepancia y ajustar el redondeo hasta obtener verde. |
+
+---
+
+## 3. Describa la máquina de estados de su agente. ¿Qué guardia evita que el agente se ejecute indefinidamente?
+
+### Descripción de la Máquina de Estados del Agente (Koenigstein, 2026, cap. 1)
+La máquina de estados finitos del agente ReAct implementada en `agentes/agente/nucleo.py` estructura y confina la ejecución del LLM bajo un protocolo formal con los siguientes estados:
+
+1. **`INICIO`:**
+   * Estado inicial al recibir el objetivo del usuario (`historial[0]`). Inicializa el temporizador de alta resolución y el registro de eventos en la traza JSONL.
+2. **`DECIDIENDO`:**
+   * El LLM recibe la ventana de contexto acumulada (objetivo, historial de herramientas y observaciones previas) y propone una decisión codificada en JSON.
+3. **`VALIDANDO_CONTRATO`:**
+   * Se comprueba deterministamente que la respuesta del LLM satisfaga el contrato estructurado mediante `validar_decision`: existencia de `pensamiento`, presencia disyuntiva exclusiva de `accion` o `final`, ausencia de campos extra no permitidos y que la herramienta pertenezca al catálogo conocido.
+   * *Transición condicional:* Si el contrato se incumple (`[inválida]`), transita a `CONTRATO_INVALIDO` y devuelve un mensaje de error como observación al historial para que el modelo se autocorrija en el estado `DECIDIENDO`. Si contiene `final`, transita a `FINALIZADO`. Si propone `accion`, transita a `EVALUANDO_POLITICA`.
+4. **`EVALUANDO_POLITICA`:**
+   * Capa de guardrails que filtra la acción propuesta (`Politica.evaluar`): verifica el sandbox de archivos, valida que los comandos CLI pertenezcan a la lista blanca (`pytest`, `radon`, `git`), bloquea ediciones sobre rutas protegidas (`tests/`) y verifica si se superó el presupuesto de pasos.
+   * *Transición condicional:* Si se deniega, transita a `BLOQUEADO` y retroalimenta al modelo; si requiere validación humana transita a `ESPERANDO_APROBACION`; si es válida, transita a `EJECUTANDO`.
+5. **`ESPERANDO_APROBACION` (Human-in-the-Loop):**
+   * El sistema suspende la ejecución y solicita confirmación humana (`s/n`) ante modificaciones críticas de código. Si el humano rechaza, transita a `DECIDIENDO` con la observación de rechazo.
+6. **`EJECUTANDO`:**
+   * Ejecución determinista de la herramienta real (`Herramientas`) dentro del entorno seguro. Si la herramienta genera una excepción inesperada, esta se captura limpiamente como texto sin romper el agente.
+7. **`OBSERVANDO`:**
+   * La salida de la herramienta o el mensaje de error se recortan al tamaño máximo permitido y se incorporan al historial conversacional con el rol `user`. El ciclo retorna automáticamente a `DECIDIENDO`.
+8. **`FINALIZADO` (Estado Terminal Exitoso):**
+   * Se alcanza cuando el modelo emite `"final"` tras haber validado la resolución con las pruebas en verde. Escribe la traza JSONL completa y devuelve la solución.
+9. **`LIMITE_ALCANZADO` (Estado Terminal por Presupuesto):**
+   * Se alcanza cuando se agota el número de pasos autorizados sin llegar a una respuesta final válida, previniendo bucles infinitos.
+
+### ¿Qué guardia evita que el agente se ejecute indefinidamente?
+La guardia explícita que protege al sistema de bucles infinitos es:
+$$\mathbf{[\text{paso} \le \text{max\_pasos}]}$$
+
+Implementada a nivel de política y control de bucle:
+```python
+# agente/politica.py
+if paso > self.max_pasos:
+    return Decision(False, f"Se alcanzó el máximo de {self.max_pasos} pasos")
+
+# agente/nucleo.py
+for paso in range(1, self.politica.max_pasos + 2):
+    ...
+```
+
+**Mecanismo de protección:**
+Si el agente entra en un bucle repetitivo de razonamiento, reitera llamadas erróneas o el asistente sufre una alucinación cíclica, cada ciclo incrementa el contador determinista `paso`. Al intentar ejecutar una acción en el paso $\text{max\_pasos} + 1$ (configurado por defecto en 15 pasos en `Politica`), la guardia evalúa a **Falso**, el método emite un veredicto de bloqueo indicando que se alcanzó el límite, la máquina de estados transita de inmediato a **`LIMITE_ALCANZADO`**, se interrumpe el bucle con `break` y se cierra la sesión persistiendo la traza. Esto garantiza un techo estricto e inviolable sobre el consumo de tokens, el tiempo de CPU y el costo económico de la plataforma.
