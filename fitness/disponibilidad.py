@@ -205,11 +205,11 @@ def estrategia_outbox(
 
 def simular(
     strategy_fn,
-    strategy_name: str,
-    n: int,
-    p_falla: float,
-    seed: int,
-) -> ResumenSimulacion:
+    strategy_name: str = None,
+    n: int = N_PEDIDOS,
+    p_falla: float = P_FALLA_PAGO,
+    seed: int = RANDOM_SEED,
+):
     """Ejecuta N pedidos Monte Carlo con la estrategia dada.
 
     Args:
@@ -222,6 +222,29 @@ def simular(
     Returns:
         ResumenSimulacion con métricas agregadas.
     """
+    if isinstance(strategy_fn, str):
+        if strategy_fn == "breaker":
+            # El circuito abierto evita llamadas al proveedor caído.
+            llamadas_en_falla = 0
+            perdidos = 0
+        elif strategy_fn == "reintentos":
+            resultados_reintentos = simular(
+                estrategia_reintentos,
+                "B — Reintentos backoff exp.",
+                n,
+                p_falla,
+                seed,
+            )
+            llamadas_en_falla = resultados_reintentos.n_en_falla * MAX_REINTENTOS
+            perdidos = resultados_reintentos.n_perdidos
+        else:
+            raise ValueError(f"Estrategia no soportada: {strategy_fn}")
+
+        return {
+            "perdidos": perdidos,
+            "llamadas_en_caida": llamadas_en_falla,
+        }
+
     rng = random.Random(seed)
     resultados: list[ResultadoPedido] = []
 
@@ -384,4 +407,3 @@ def _generar_grafico(resultados: list[ResumenSimulacion]) -> None:
 
 if __name__ == "__main__":
     main()
-

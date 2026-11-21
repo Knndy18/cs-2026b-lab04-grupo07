@@ -136,6 +136,39 @@ class SimResult:
     cumple_sla: bool
 
 
+def bd_con_indice() -> float:
+    """Latencia media del servicio de catálogo con índice de base de datos."""
+    return DB_MS
+
+
+def con_cache(servicio):
+    """Aplica la caché Redis sobre la latencia del servicio base."""
+    def servicio_con_cache() -> float:
+        mu_base = servicio()
+        return CACHE_HIT_RATE * CACHE_MS + (1.0 - CACHE_HIT_RATE) * mu_base
+
+    return servicio_con_cache
+
+
+def simular(lam: float, workers: int, servicio) -> dict:
+    """Compatibilidad para fitness functions que verifican carga pico."""
+    mu_ms = servicio()
+    resultado = simular_mmcq(
+        c=workers,
+        lam=lam,
+        mu_ms=mu_ms,
+        n=N_REQUESTS,
+        seed=RANDOM_SEED,
+    )
+    return {
+        "p50": resultado.p50_ms,
+        "p90": resultado.p90_ms,
+        "p95": resultado.p95_ms,
+        "p99": resultado.p99_ms,
+        "mean": resultado.mean_ms,
+    }
+
+
 def simular_mmcq(
     c: int,
     lam: float,
@@ -382,4 +415,3 @@ def _generar_grafico(
 
 if __name__ == "__main__":
     main()
-
