@@ -1,0 +1,1 @@
+{"caso_id":"N11","resultados":[{"entrada":"papa amarilla","producto_id":"P02","nombre":"papa amarilla"},{"entrada":"papa morada","producto_id":"desconocido","nombre":"desconocido"},{"entrada":"queso fresco","producto_id":"desconocido","nombre":"desconocido"}]}

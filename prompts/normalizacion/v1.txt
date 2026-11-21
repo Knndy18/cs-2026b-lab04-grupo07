@@ -1,0 +1,4 @@
+Normaliza los nombres de productos usando este catálogo: {{catalogo | dump}}.
+Entradas: {{entradas | dump}}.
+Devuelve solo JSON con caso_id igual a {{id}} y resultados como lista de objetos con entrada, producto_id y nombre.
+Conserva las entradas en orden. Usa el identificador y nombre del catálogo o desconocido cuando no se pueda identificar un producto.

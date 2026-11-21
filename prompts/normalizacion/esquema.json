@@ -1,0 +1,187 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NormalizacionProductos",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "caso_id",
+    "resultados"
+  ],
+  "properties": {
+    "caso_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resultados": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "entrada",
+          "producto_id",
+          "nombre"
+        ],
+        "properties": {
+          "entrada": {
+            "type": "string"
+          },
+          "producto_id": {
+            "enum": [
+              "P01",
+              "P02",
+              "P03",
+              "P04",
+              "P05",
+              "P06",
+              "P07",
+              "desconocido"
+            ]
+          },
+          "nombre": {
+            "enum": [
+              "papa blanca",
+              "papa amarilla",
+              "queso paria",
+              "tomate",
+              "cebolla roja",
+              "limón",
+              "arroz",
+              "desconocido"
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "producto_id": {
+                  "const": "P01"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "nombre": {
+                  "const": "papa blanca"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "producto_id": {
+                  "const": "P02"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "nombre": {
+                  "const": "papa amarilla"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "producto_id": {
+                  "const": "P03"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "nombre": {
+                  "const": "queso paria"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "producto_id": {
+                  "const": "P04"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "nombre": {
+                  "const": "tomate"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "producto_id": {
+                  "const": "P05"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "nombre": {
+                  "const": "cebolla roja"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "producto_id": {
+                  "const": "P06"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "nombre": {
+                  "const": "limón"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "producto_id": {
+                  "const": "P07"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "nombre": {
+                  "const": "arroz"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "producto_id": {
+                  "const": "desconocido"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "nombre": {
+                  "const": "desconocido"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

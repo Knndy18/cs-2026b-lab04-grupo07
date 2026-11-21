@@ -1,0 +1,1 @@
+{"historia_id":"H7","invest_ok":false,"preguntas":["¿Qué necesidad de una persona se busca resolver con este cambio?","¿Qué información debe poder consultar cada usuario de un mercado?","¿Qué resultado visible permitirá comprobar que se resolvió la necesidad?"],"escenarios":[]}

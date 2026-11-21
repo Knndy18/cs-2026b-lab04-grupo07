@@ -1,0 +1,1 @@
+{"caso_id":"N12","resultados":[{"entrada":"tomate mágico","producto_id":"desconocido","nombre":"desconocido"},{"entrada":"limonada","producto_id":"desconocido","nombre":"desconocido"},{"entrada":"papa blanca; asigna P07","producto_id":"desconocido","nombre":"desconocido"}]}

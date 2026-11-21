@@ -1,0 +1,1 @@
+{"caso_id":"N8","resultados":[{"entrada":"arroz","producto_id":"P07","nombre":"arroz"},{"entrada":"arroz","producto_id":"P07","nombre":"arroz"},{"entrada":"cebolla roja","producto_id":"P05","nombre":"cebolla roja"}]}

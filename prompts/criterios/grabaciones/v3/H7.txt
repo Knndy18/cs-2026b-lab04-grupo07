@@ -1,0 +1,1 @@
+{"historia_id":"H7","invest_ok":false,"preguntas":["¿Quién necesita esta mejora y qué problema tiene actualmente?","¿Qué información debería poder ver una persona de cada mercado?","¿Qué resultado observable debe ocurrir si intenta ver información de otro mercado?"],"escenarios":[]}

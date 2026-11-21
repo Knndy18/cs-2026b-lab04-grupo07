@@ -1,0 +1,1 @@
+{"historia_id":"H6","invest_ok":false,"preguntas":["¿Qué pantalla debe cargar y en cuánto tiempo como máximo?","¿Qué tarea concreta deben realizar los comerciantes mayores?","¿Qué prueba permitirá comprobar que pueden completarla sin ayuda?"],"escenarios":[]}

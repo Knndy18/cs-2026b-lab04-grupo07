@@ -1,0 +1,1 @@
+{"caso_id":"N5","resultados":[{"entrada":"papa","producto_id":"desconocido","nombre":"desconocido"},{"entrada":"queso","producto_id":"desconocido","nombre":"desconocido"},{"entrada":"cebolla","producto_id":"desconocido","nombre":"desconocido"}]}
