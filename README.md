@@ -493,12 +493,6 @@ En este laboratorio tratamos los prompts como artefactos de software versionados
 | E6: ADRs (006, 007, 008) y actualizacion C4 en Structurizr (workspace.dsl) | Nagin | Completado |
 | E7: Matriz de riesgos mitigados y bitacora de IA en `bitacora-ia.md` | Diego | Completado |
 | E8: README consolidado, Pull Requests y etiquetado Git v0.8-arquitectura | Equipo | Completado |
-| **Laboratorio 10 (`v1.0-agentes`) — Sistemas Agénticos** | | |
-| E1: Lienzo de diseño (`agentes/diseno/lienzo.md`) y 3 issues en rojo (`issues/`) | Equipo | Completado |
-| E2: Mini framework agéntico, resolución ReAct Issue #01 con traza y diagrama Mermaid | Equipo | Completado |
-| E3: Máquina de estados (`estados.puml`, `estados.png`) y pruebas de contrato (`test_agente.py`) | Equipo | Completado |
-| Cuestionario: Preguntas 1, 2 y 3 (`Cuestionarios.md`) | Equipo | Completado |
-
 | **Laboratorio 09 (`v0.9-prompts`) — Prompts como Codigo, Evals (`promptfoo`) y Seguridad (OWASP LLM01)** | | |
 | E1: Contrato JSON Schema (`esquema.json`) y dataset de criterios (`casos.yaml`) | Diego | Completado |
 | E2: Linea base `v1.txt`, proveedor grabado (`proveedor_grabado.py`) y configuracion `promptfooconfig.yaml` | Diego | Completado |
@@ -508,3 +502,10 @@ En este laboratorio tratamos los prompts como artefactos de software versionados
 | E6: Integracion en codigo detras de `ProveedorLLM` (`src/<modulo>/generador_*.py`) y pruebas | Kennedy | Completado |
 | E7: Workflow en CI (`.github/workflows/prompts.yml`), no determinismo y `bitacora-ia.md` | Kennedy | Completado |
 | E8: Seccion en README, grafico de resultados, Pull Requests y etiquetado Git `v0.9-prompts` | Diego / Equipo | Completado |
+| **Laboratorio 10 (`v1.0-agentes`) — Sistemas Agénticos** | | |
+| E1: Lienzo de diseño (`agentes/diseno/lienzo.md`) y 3 issues en rojo (`issues/`) | Equipo | Completado |
+| E2: Mini framework agéntico, resolución ReAct Issue #01 con traza y diagrama Mermaid | Equipo | Completado |
+| E3: Máquina de estados (`estados.puml`, `estados.png`) y pruebas de contrato (`test_agente.py`) | Equipo | Completado |
+| Cuestionario: Preguntas 1, 2 y 3 (`Cuestionarios.md`) | Equipo | Completado |
+
+
