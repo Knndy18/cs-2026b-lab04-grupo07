@@ -28,8 +28,8 @@ def calcular_comision_pedido(items: List[ItemComision]) -> float:
     puestos_involucrados: Set[str] = {item.puesto_id for item in items}
     subtotal_general: float = sum(item.subtotal for item in items)
 
-    # Corrección: La comisión fija se cobra una única vez por pedido multipuesto
-    comision_fija = TARIFA_FIJA_BASE
+    # BUG (Issue #01): Multiplica la comisión fija por cada puesto en lugar de aplicarla una sola vez por pedido
+    comision_fija = TARIFA_FIJA_BASE * len(puestos_involucrados)
     comision_variable = subtotal_general * PORCENTAJE_VARIABLE
 
     total_comision = comision_fija + comision_variable
