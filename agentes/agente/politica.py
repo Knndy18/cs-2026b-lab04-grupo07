@@ -25,6 +25,10 @@ def pedir_aprobacion_humana(args: dict) -> bool:
         print("Entrada inválida. Ingrese exactamente 's' para aprobar o 'n' para rechazar.")
 
 
+# Alias funcional para cumplir con el contrato de la guía
+aprobar_edicion = pedir_aprobacion_humana
+
+
 @dataclass
 class Decision:
     permitido: bool

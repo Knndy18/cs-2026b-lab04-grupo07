@@ -323,3 +323,49 @@ def test_politica_aprobacion_humana_permite_edicion(monkeypatch, tmp_path):
     p = Politica(aprobar_edicion=pedir_aprobacion_humana)
     v = p.evaluar("editar_archivo", {"ruta": "src/pedidos/catalogo.py", "antes": "a", "despues": "b"}, paso=1)
     assert v.permitido
+
+
+def test_agente_edicion_rechazada_no_modifica_archivo(monkeypatch, tmp_path):
+    """Verifica que una edición rechazada por el humano ('n') no modifique físicamente el archivo."""
+    from agentes.agente.nucleo import Agente
+    from agentes.agente.modelo import ModeloGrabado
+
+    archivo = tmp_path / "codigo.py"
+    contenido_original = "total = 100\n"
+    archivo.write_text(contenido_original, encoding="utf-8")
+
+    # El humano rechaza la edición ingresando 'n'
+    monkeypatch.setattr("builtins.input", lambda prompt: "n")
+
+    sandbox = Herramientas(raiz=tmp_path)
+    politica = Politica(aprobar_edicion=pedir_aprobacion_humana)
+
+    trayectoria = [
+        {
+            "pensamiento": "Intento modificar el archivo",
+            "accion": "editar_archivo",
+            "args": {"ruta": "codigo.py", "antes": "total = 100", "despues": "total = 200"}
+        },
+        {
+            "pensamiento": "Observo que fue rechazada y termino",
+            "final": "Edición rechazada por el revisor humano."
+        }
+    ]
+
+    agente = Agente(
+        rol="ejecutor",
+        modelo=ModeloGrabado(trayectoria),
+        herramientas=sandbox,
+        politica=politica,
+        objetivo="Modificar codigo.py",
+        traza_archivo=str(tmp_path / "traza.jsonl")
+    )
+    resultado = agente.ejecutar()
+
+    # El archivo NO debe haber cambiado
+    assert archivo.read_text(encoding="utf-8") == contenido_original
+
+    # La traza debe reflejar que la acción fue bloqueada por el humano
+    bloqueados = [e for e in agente.eventos if e.get("bloqueada", False)]
+    assert len(bloqueados) == 1
+    assert "El revisor humano rechazó la edición" in bloqueados[0]["observacion"]
