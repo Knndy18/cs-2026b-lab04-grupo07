@@ -21,5 +21,8 @@ def obtener_catalogo_visible(productos: List[ProductoCatalogo]) -> List[Producto
     - Deben estar activos (activo == True)
     - Deben tener stock disponible mayor a cero (stock_disponible > 0)
     """
-    # BUG (Issue #02): Solo filtra por activo, permitiendo que productos agotados (stock == 0) sigan visibles
-    return [p for p in productos if p.activo]
+    # Regla de negocio oficial (Issue #02): visible si está activo y tiene stock estrictamente positivo
+    return [
+        p for p in productos
+        if p.activo and (p.stock_disponible is not None and p.stock_disponible > 0)
+    ]

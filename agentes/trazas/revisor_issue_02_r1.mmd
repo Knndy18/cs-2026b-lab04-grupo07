@@ -1,0 +1,17 @@
+sequenceDiagram
+    autonumber
+    actor Humano
+    participant Planificador as Planificador (gestor)
+    participant Ejecutor as Ejecutor (actor)
+    participant Politica as Política (guardrails)
+    participant Herramientas as Herramientas (sandbox)
+    Humano->>Ejecutor: Objetivo: Resolver incidencia
+    revisor->>Herramientas: ver_cambios({})
+    Herramientas-->>revisor: diff --git a/src/pedidos/catalogo.py b/src/pedidos/c...
+    revisor->>Herramientas: leer_archivo({'ruta': 'issues/ISSUE-02.md'})
+    Herramientas-->>revisor: # Issue #02: Producto agotado sigue visible en el ca...
+    revisor->>Herramientas: leer_archivo({'ruta': 'src/pedidos/catalogo.py'})
+    Herramientas-->>revisor: '''Módulo de catálogo y visibilidad de productos (Sa...
+    revisor->>Herramientas: ejecutar_pruebas({'subruta': 'tests/test_issue_02_cata...})
+    Herramientas-->>revisor: ============================= test session starts ==...
+    revisor-->>Humano: Respuesta final: CAMBIOS SOLICITADOS: 1. [Bloqueante - Robustez]: En src/p...

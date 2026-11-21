@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    actor Humano
+    participant Planificador as Planificador (gestor)
+    participant Ejecutor as Ejecutor (actor)
+    participant Politica as Política (guardrails)
+    participant Herramientas as Herramientas (sandbox)
+    Humano->>Ejecutor: Objetivo: Resolver incidencia
+    revisor->>Herramientas: ver_cambios({})
+    Herramientas-->>revisor: diff --git a/src/pedidos/catalogo.py b/src/pedidos/c...
+    revisor->>Herramientas: ejecutar_pruebas({'subruta': 'tests/test_issue_02_cata...})
+    Herramientas-->>revisor: ============================= test session starts ==...
+    revisor-->>Humano: Respuesta final: APROBADO. El cambio en src/pedidos/catalogo.py implementa...

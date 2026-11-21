@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    actor Humano
+    participant Planificador as Planificador (gestor)
+    participant Ejecutor as Ejecutor (actor)
+    participant Politica as Política (guardrails)
+    participant Herramientas as Herramientas (sandbox)
+    Humano->>Ejecutor: Objetivo: Resolver incidencia
+    planificador->>Herramientas: leer_archivo({'ruta': 'issues/ISSUE-02.md'})
+    Herramientas-->>planificador: # Issue #02: Producto agotado sigue visible en el ca...
+    planificador->>Herramientas: leer_archivo({'ruta': 'src/pedidos/catalogo.py'})
+    Herramientas-->>planificador: '''Módulo de catálogo y visibilidad de productos (Sa...
+    planificador-->>Humano: Respuesta final: Plan de resolución para Issue #02: 1. Reproducir el error...

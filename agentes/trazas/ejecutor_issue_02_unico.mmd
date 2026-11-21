@@ -1,0 +1,23 @@
+sequenceDiagram
+    autonumber
+    actor Humano
+    participant Planificador as Planificador (gestor)
+    participant Ejecutor as Ejecutor (actor)
+    participant Politica as Política (guardrails)
+    participant Herramientas as Herramientas (sandbox)
+    Humano->>Ejecutor: Objetivo: Resolver incidencia
+    Ejecutor->>Herramientas: leer_archivo({'ruta': 'issues/ISSUE-02.md'})
+    Herramientas-->>Ejecutor: # Issue #02: Producto agotado sigue visible en el ca...
+    Ejecutor->>Herramientas: ejecutar_pruebas({'subruta': 'tests/test_issue_02_cata...})
+    Herramientas-->>Ejecutor: ============================= test session starts ==...
+    Ejecutor->>Herramientas: buscar({'patron': 'def obtener_catalogo_visi...})
+    Herramientas-->>Ejecutor: src/pedidos/catalogo.py:17: def obtener_catalogo_vis...
+    Ejecutor->>Herramientas: leer_archivo({'ruta': 'src/pedidos/catalogo.py'})
+    Herramientas-->>Ejecutor: '''Módulo de catálogo y visibilidad de productos (Sa...
+    Ejecutor->>Herramientas: editar_archivo({'ruta': 'src/pedidos/catalogo.py', '...})
+    Herramientas-->>Ejecutor: OK: src/pedidos/catalogo.py modificado
+    Ejecutor->>Herramientas: ejecutar_pruebas({'subruta': 'tests/test_issue_02_cata...})
+    Herramientas-->>Ejecutor: ============================= test session starts ==...
+    Ejecutor->>Herramientas: ver_cambios({})
+    Herramientas-->>Ejecutor: diff --git a/src/pedidos/catalogo.py b/src/pedidos/c...
+    Ejecutor-->>Humano: Respuesta final: Se resolvió el Issue #02: en src/pedidos/catalogo.py se a...

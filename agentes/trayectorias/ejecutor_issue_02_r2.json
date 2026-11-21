@@ -1,0 +1,34 @@
+[
+  {
+    "pensamiento": "Recibí la retroalimentación del revisor crítico sobre el manejo defensivo de stock nulo y documentación. Leo src/pedidos/catalogo.py para preparar la edición robusta.",
+    "accion": "leer_archivo",
+    "args": {
+      "ruta": "src/pedidos/catalogo.py"
+    }
+  },
+  {
+    "pensamiento": "Aplico los cambios solicitados por el revisor: validación defensiva `p.stock_disponible is not None and p.stock_disponible > 0` y documentación formal de la regla de visibilidad.",
+    "accion": "editar_archivo",
+    "args": {
+      "ruta": "src/pedidos/catalogo.py",
+      "antes": "    # Corrección rápida para stock positivo\n    return [p for p in productos if p.activo and p.stock_disponible > 0]",
+      "despues": "    # Regla de negocio oficial (Issue #02): visible si está activo y tiene stock estrictamente positivo\n    return [\n        p for p in productos\n        if p.activo and (p.stock_disponible is not None and p.stock_disponible > 0)\n    ]"
+    }
+  },
+  {
+    "pensamiento": "Ejecuto las pruebas automáticas para confirmar que la nueva implementación continúe en verde.",
+    "accion": "ejecutar_pruebas",
+    "args": {
+      "subruta": "tests/test_issue_02_catalogo.py"
+    }
+  },
+  {
+    "pensamiento": "Inspecciono el diff final con ver_cambios para asegurar una entrega limpia.",
+    "accion": "ver_cambios",
+    "args": {}
+  },
+  {
+    "pensamiento": "Los cambios solicitados fueron incorporados con éxito y las pruebas pasan. Presento la solución al revisor.",
+    "final": "Ronda 2 completada: se corrigió obtener_catalogo_visible en src/pedidos/catalogo.py incorporando la comprobación defensiva `p.stock_disponible is not None and p.stock_disponible > 0`, protegiendo contra stocks nulos y manteniendo las pruebas en verde (1 passed)."
+  }
+]

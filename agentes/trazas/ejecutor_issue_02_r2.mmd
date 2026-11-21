@@ -1,0 +1,17 @@
+sequenceDiagram
+    autonumber
+    actor Humano
+    participant Planificador as Planificador (gestor)
+    participant Ejecutor as Ejecutor (actor)
+    participant Politica as Política (guardrails)
+    participant Herramientas as Herramientas (sandbox)
+    Humano->>Ejecutor: Objetivo: Resolver incidencia
+    Ejecutor->>Herramientas: leer_archivo({'ruta': 'src/pedidos/catalogo.py'})
+    Herramientas-->>Ejecutor: '''Módulo de catálogo y visibilidad de productos (Sa...
+    Ejecutor->>Herramientas: editar_archivo({'ruta': 'src/pedidos/catalogo.py', '...})
+    Herramientas-->>Ejecutor: OK: src/pedidos/catalogo.py modificado
+    Ejecutor->>Herramientas: ejecutar_pruebas({'subruta': 'tests/test_issue_02_cata...})
+    Herramientas-->>Ejecutor: ============================= test session starts ==...
+    Ejecutor->>Herramientas: ver_cambios({})
+    Herramientas-->>Ejecutor: diff --git a/src/pedidos/catalogo.py b/src/pedidos/c...
+    Ejecutor-->>Humano: Respuesta final: Ronda 2 completada: se corrigió obtener_catalogo_visible ...

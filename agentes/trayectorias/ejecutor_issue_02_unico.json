@@ -1,0 +1,55 @@
+[
+  {
+    "pensamiento": "Leo el requerimiento en issues/ISSUE-02.md para comprender la falla de visualización de productos sin stock en el catálogo.",
+    "accion": "leer_archivo",
+    "args": {
+      "ruta": "issues/ISSUE-02.md"
+    }
+  },
+  {
+    "pensamiento": "Ejecuto la prueba tests/test_issue_02_catalogo.py para reproducir el fallo reportado.",
+    "accion": "ejecutar_pruebas",
+    "args": {
+      "subruta": "tests/test_issue_02_catalogo.py"
+    }
+  },
+  {
+    "pensamiento": "Busco la función obtener_catalogo_visible en src/pedidos/catalogo.py para ver cómo se filtra la lista de productos.",
+    "accion": "buscar",
+    "args": {
+      "patron": "def obtener_catalogo_visible"
+    }
+  },
+  {
+    "pensamiento": "Leo src/pedidos/catalogo.py para analizar la regla de visibilidad actual.",
+    "accion": "leer_archivo",
+    "args": {
+      "ruta": "src/pedidos/catalogo.py"
+    }
+  },
+  {
+    "pensamiento": "Modifico src/pedidos/catalogo.py agregando la condición p.stock_disponible > 0 en la comprensión de listas.",
+    "accion": "editar_archivo",
+    "args": {
+      "ruta": "src/pedidos/catalogo.py",
+      "antes": "    # BUG (Issue #02): Solo filtra por activo, permitiendo que productos agotados (stock == 0) sigan visibles\n    return [p for p in productos if p.activo]",
+      "despues": "    # BUG (Issue #02): Solo filtra por activo, permitiendo que productos agotados (stock == 0) sigan visibles\n    return [p for p in productos if p.activo and p.stock_disponible > 0]"
+    }
+  },
+  {
+    "pensamiento": "Ejecuto las pruebas automáticas para comprobar si el cambio hace pasar la prueba.",
+    "accion": "ejecutar_pruebas",
+    "args": {
+      "subruta": "tests/test_issue_02_catalogo.py"
+    }
+  },
+  {
+    "pensamiento": "Reviso los cambios con git diff para confirmar la modificación.",
+    "accion": "ver_cambios",
+    "args": {}
+  },
+  {
+    "pensamiento": "La prueba pasó exitosamente. Considero terminada la tarea.",
+    "final": "Se resolvió el Issue #02: en src/pedidos/catalogo.py se añadió la condición p.stock_disponible > 0 para ocultar productos agotados. La prueba tests/test_issue_02_catalogo.py pasa en verde."
+  }
+]
