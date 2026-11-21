@@ -1,0 +1,75 @@
+@startuml estados
+skinparam state {
+    BackgroundColor White
+    BorderColor #2C3E50
+    ArrowColor #2C3E50
+    FontName sans-serif
+    FontSize 12
+    AttributeFontName sans-serif
+}
+skinparam defaultFontName sans-serif
+
+[*] --> Decidiendo : Objetivo recibido
+
+state Decidiendo {
+    Decidiendo : El modelo propone
+    Decidiendo : pensamiento + acción o final
+}
+
+state ValidandoContrato {
+    ValidandoContrato : Valida formato JSON, claves
+    ValidandoContrato : requeridas y herramientas conocidas
+}
+
+state EvaluandoPolitica {
+    EvaluandoPolitica : Evalúa sandbox, lista blanca
+    EvaluandoPolitica : de comandos y rutas protegidas
+}
+
+state EsperandoAprobacion {
+    EsperandoAprobacion : Humano en el circuito (HITL)
+    EsperandoAprobacion : Revisor autoriza (s/n) edición sensible
+}
+
+state Ejecutando {
+    Ejecutando : Ejecución determinista de
+    Ejecutando : la herramienta en el entorno
+}
+
+state Observando {
+    Observando : Se captura salida o error
+    Observando : y se adjunta al historial
+}
+
+state Finalizado #D4EFDF {
+    Finalizado : Tarea completada
+    Finalizado : Respuesta final entregada
+}
+
+state LimiteAlcanzado #FADBD8 {
+    LimiteAlcanzado : Presupuesto de pasos
+    LimiteAlcanzado : agotado sin resolución
+}
+
+Decidiendo --> ValidandoContrato : Decisión JSON emitida
+
+ValidandoContrato --> Decidiendo : [inválida] / ERROR DE CONTRATO\n(observación para autocorrección)
+ValidandoContrato --> Finalizado : [es 'final']
+ValidandoContrato --> EvaluandoPolitica : [es 'accion']
+
+EvaluandoPolitica --> Decidiendo : [denegada] / BLOQUEADO\n(violación de política)
+EvaluandoPolitica --> LimiteAlcanzado : [paso > max_pasos]
+EvaluandoPolitica --> EsperandoAprobacion : [requiere aprobación humana]
+
+EsperandoAprobacion --> Decidiendo : [rechazada por humano 'n']
+EsperandoAprobacion --> Ejecutando : [aprobada por humano 's']
+
+EvaluandoPolitica --> Ejecutando : [permitida directamente]
+
+Ejecutando --> Observando : Resultado exitoso o excepción
+Observando --> Decidiendo : Observación agregada al historial
+
+Finalizado --> [*]
+LimiteAlcanzado --> [*]
+
+@enduml
