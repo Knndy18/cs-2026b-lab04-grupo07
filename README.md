@@ -331,6 +331,38 @@ La integridad de la arquitectura se protege contra la degradación mediante prue
 
 ---
 
+## Prompt engineering (Lab 09)
+
+En este laboratorio tratamos los prompts como artefactos de software versionados en Git, con contratos de salida estrictos (`JSON Schema`), datasets de pruebas (`casos.yaml`), aserciones automáticas mediante `promptfoo` y defensa en capas contra inyección de prompts (**OWASP LLM01**).
+
+### 1. Evolución y Tasa de Aprobación
+
+#### Tarea A: Generación de Criterios de Aceptación Gherkin (`prompts/criterios/`)
+| Versión | Técnicas y Patrones Aplicados | Casos Aprobados | Tasa de Aprobación | Regresiones | Evolución y Hallazgos |
+|---|---|---:|:---:|:---:|---|
+| **`v1`** (Línea base) | Zero-shot simple sin formato ni restricciones | 0 / 8 | **0.00%** | — | Responde en texto libre (falla `A1` y `A2`), menciona detalles técnicos (`A3`), inventa criterios en historias no INVEST (`A4`) y obedece la inyección `H8` (`A5`). |
+| **`v2`** | Persona + Contexto + Template JSON + Few-Shot (`EJ1`, `EJ2`) + Cognitive Verifier + Delimitadores `<historia>` | 8 / 8 | **100.00%** | Ninguna | Supera la meta del 85%. Cumple el esquema JSON (`A1`), distingue casos válidos de no INVEST (`A4`) y bloquea la inyección básica (`A5`). |
+| **`v3`** | v2 + Revisión de Cobertura explícita + Endurecimiento anti-inyección y anti-fuga de prompt | 8 / 8 | **100.00%** | Ninguna | Refuerza bordes específicos (stock multipuesto, mercados vacíos, constancias sin validar) y blindaje contra ataques avanzados de inyección y extracción de reglas. |
+
+#### Tarea B: Normalización de Productos del Catálogo (`prompts/normalizacion/`)
+| Versión | Casos Aprobados | Tasa de Aprobación | Regresiones | Observaciones |
+|---|---:|:---:|:---:|---|
+| **`v1`** | 12 / 12 | **100.00%** | — | Asigna entradas de comerciantes a productos válidos del catálogo o `"desconocido"` según contrato. |
+| **`v2`** | 12 / 12 | **100.00%** | Ninguna | Mantiene el cumplimiento total sobre las muestras de referencia. |
+| **`v3`** | 12 / 12 | **100.00%** | Ninguna | Mantiene el 100% sin regresiones. |
+
+### 2. Gráfico de Resultados de Evaluación
+
+![Resultados de Evaluación promptfoo - Lab 09](docs/architecture/grafico-evals-lab09.png)
+
+### 3. Lecciones Aprendidas
+1. **Un prompt es una especificación ejecutable:** Definir un contrato `JSON Schema` y verificaciones internas (*Cognitive Verifier* y *Revisión de Cobertura*) elimina salidas ambiguas o en texto libre imposibles de integrar en el código.
+2. **Evaluación con evidencia y control de regresiones:** Comparar `v1`, `v2` y `v3` con `promptfoo` permite comprobar objetivamente que cada mejora endurece el comportamiento sin romper casos previamente aprobados.
+3. **Un 100% en muestras de referencia no implica perfección:** Como se advierte en `resultados.md`, aprobar el 100% sobre un conjunto fijo de grabaciones demuestra ausencia de regresiones en ese dataset, pero exige ampliar continuamente los casos de borde y pruebas adversarias frente a un LLM real.
+4. **Defensa en capas (OWASP LLM01):** Combinar delimitadores XML (`<historia>`), instrucciones explícitas contra secuestro de órdenes o revelación de prompt, y validación estricta de salida en Python (`jsonschema`) protege el sistema incluso si un usuario inyecta instrucciones maliciosas.
+
+---
+
 ## Sistemas Agénticos en la Construcción de Software (Laboratorio 10)
 
 En este laboratorio se diseña, construye y coordina un **sistema agéntico autónomo** basado en el patrón **ReAct (*Reasoning + Acting*)** y modelado formalmente como una **máquina de estados finitos** para resolver incidencias reales y sembradas en los módulos de **San Camilo en Línea**, siguiendo los principios de Albada (2025), Koenigstein (2026) y Grootendorst & Alammar (2026).
@@ -412,35 +444,21 @@ python agentes/resolver_issue1.py
 python -m pytest tests/test_issue_01_comision.py -v
 ```
 
-## Prompt engineering (Lab 09)
+### 6. Resumen de Métricas de Ejecución (E7)
 
-En este laboratorio tratamos los prompts como artefactos de software versionados en Git, con contratos de salida estrictos (`JSON Schema`), datasets de pruebas (`casos.yaml`), aserciones automáticas mediante `promptfoo` y defensa en capas contra inyección de prompts (**OWASP LLM01**).
+| Métrica | Issue #01: Comisión doble (`comisiones.py`) | Issue #02: Stock agotado — *Agente Único* (`catalogo.py`) | Issue #02: Stock agotado — *Actor-Crítico* (`catalogo.py`) | Issue #03: Redondeo céntimos (`liquidacion.py`) |
+|---|:---:|:---:|:---:|:---:|
+| **Coordinación** | Agente único (ReAct) | Agente único (ReAct) | Gestor + Actor-Crítico | Agente único + AST + Memoria |
+| **Rondas** | 1 | 1 | 2 rondas | 1 |
+| **Acciones totales** | 9 | 7 | 18 | 9 |
+| **Rechazos de contrato** | 0 | 0 | 0 | 0 |
+| **Bloqueos de política** | 1 (`curl ... \| sh`) | 0 | 0 | 0 |
+| **Contexto acumulado** | ~7,450 chars | ~6,120 chars | ~14,890 chars | 8,183 chars |
+| **Estado final** | Resuelto (`pytest` OK) | Resuelto (`pytest` OK) | Resuelto + borde `None` corregido | Resuelto (`pytest` OK) |
 
-### 1. Evolución y Tasa de Aprobación
-
-#### Tarea A: Generación de Criterios de Aceptación Gherkin (`prompts/criterios/`)
-| Versión | Técnicas y Patrones Aplicados | Casos Aprobados | Tasa de Aprobación | Regresiones | Evolución y Hallazgos |
-|---|---|---:|:---:|:---:|---|
-| **`v1`** (Línea base) | Zero-shot simple sin formato ni restricciones | 0 / 8 | **0.00%** | — | Responde en texto libre (falla `A1` y `A2`), menciona detalles técnicos (`A3`), inventa criterios en historias no INVEST (`A4`) y obedece la inyección `H8` (`A5`). |
-| **`v2`** | Persona + Contexto + Template JSON + Few-Shot (`EJ1`, `EJ2`) + Cognitive Verifier + Delimitadores `<historia>` | 8 / 8 | **100.00%** | Ninguna | Supera la meta del 85%. Cumple el esquema JSON (`A1`), distingue casos válidos de no INVEST (`A4`) y bloquea la inyección básica (`A5`). |
-| **`v3`** | v2 + Revisión de Cobertura explícita + Endurecimiento anti-inyección y anti-fuga de prompt | 8 / 8 | **100.00%** | Ninguna | Refuerza bordes específicos (stock multipuesto, mercados vacíos, constancias sin validar) y blindaje contra ataques avanzados de inyección y extracción de reglas. |
-
-#### Tarea B: Normalización de Productos del Catálogo (`prompts/normalizacion/`)
-| Versión | Casos Aprobados | Tasa de Aprobación | Regresiones | Observaciones |
-|---|---:|:---:|:---:|---|
-| **`v1`** | 12 / 12 | **100.00%** | — | Asigna entradas de comerciantes a productos válidos del catálogo o `"desconocido"` según contrato. |
-| **`v2`** | 12 / 12 | **100.00%** | Ninguna | Mantiene el cumplimiento total sobre las muestras de referencia. |
-| **`v3`** | 12 / 12 | **100.00%** | Ninguna | Mantiene el 100% sin regresiones. |
-
-### 2. Gráfico de Resultados de Evaluación
-
-![Resultados de Evaluación promptfoo - Lab 09](docs/architecture/grafico-evals-lab09.png)
-
-### 3. Lecciones Aprendidas
-1. **Un prompt es una especificación ejecutable:** Definir un contrato `JSON Schema` y verificaciones internas (*Cognitive Verifier* y *Revisión de Cobertura*) elimina salidas ambiguas o en texto libre imposibles de integrar en el código.
-2. **Evaluación con evidencia y control de regresiones:** Comparar `v1`, `v2` y `v3` con `promptfoo` permite comprobar objetivamente que cada mejora endurece el comportamiento sin romper casos previamente aprobados.
-3. **Un 100% en muestras de referencia no implica perfección:** Como se advierte en `resultados.md`, aprobar el 100% sobre un conjunto fijo de grabaciones demuestra ausencia de regresiones en ese dataset, pero exige ampliar continuamente los casos de borde y pruebas adversarias frente a un LLM real.
-4. **Defensa en capas (OWASP LLM01):** Combinar delimitadores XML (`<historia>`), instrucciones explícitas contra secuestro de órdenes o revelación de prompt, y validación estricta de salida en Python (`jsonschema`) protege el sistema incluso si un usuario inyecta instrucciones maliciosas.
+* **Decisión arquitectónica:** [`docs/architecture/adr/010-sistema-agentico.md`](docs/architecture/adr/010-sistema-agentico.md)
+* **Hoja de ruta de autonomía:** [`agentes/delegacion.md`](agentes/delegacion.md)
+* **Observación detallada y bitácora:** [`agentes/observacion.md`](agentes/observacion.md) y [`agentes/bitacora-ia.md`](agentes/bitacora-ia.md)
 
 ---
 ## Estado del trabajo
@@ -503,9 +521,13 @@ En este laboratorio tratamos los prompts como artefactos de software versionados
 | E7: Workflow en CI (`.github/workflows/prompts.yml`), no determinismo y `bitacora-ia.md` | Kennedy | Completado |
 | E8: Seccion en README, grafico de resultados, Pull Requests y etiquetado Git `v0.9-prompts` | Diego / Equipo | Completado |
 | **Laboratorio 10 (`v1.0-agentes`) — Sistemas Agénticos** | | |
-| E1: Lienzo de diseño (`agentes/diseno/lienzo.md`) y 3 issues en rojo (`issues/`) | Equipo | Completado |
-| E2: Mini framework agéntico, resolución ReAct Issue #01 con traza y diagrama Mermaid | Equipo | Completado |
-| E3: Máquina de estados (`estados.puml`, `estados.png`) y pruebas de contrato (`test_agente.py`) | Equipo | Completado |
-| Cuestionario: Preguntas 1, 2 y 3 (`Cuestionarios.md`) | Equipo | Completado |
+| E1: Lienzo de diseño (`agentes/diseno/lienzo.md`) y 3 issues en rojo (`issues/`) | Kennedy | Completado |
+| E2: Mini framework agéntico, resolución ReAct Issue #01 con traza y diagrama Mermaid | Kennedy | Completado |
+| E3: Máquina de estados (`estados.puml`, `estados.png`) y pruebas de contrato (`test_agente.py`) | Kennedy | Completado |
+| E4: Herramienta AST (`mapa_repo`) y memoria de notas (`anotar`, `leer_notas`) sobre Issue #03 | Nagin | Completado |
+| E5: Coordinación multiagente (gestor + actor-crítico) frente a agente único en Issue #02 | Nagin | Completado |
+| E6: Humano en el circuito (`aprobar_edicion`) y hoja de ruta de autonomía (`agentes/delegacion.md`) | Nagin | Completado |
+| E7: Tabla de métricas de trazas (`agentes/observacion.md`) y bitácora de IA (`agentes/bitacora-ia.md`) | Diego | Completado |
+| E8: ADR-010 (`010-sistema-agentico.md`), sección en `README.md` y etiquetado Git `v1.0-agentes` | Diego | Completado |
 
 
